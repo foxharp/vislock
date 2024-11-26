@@ -223,11 +223,6 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
-		if (options->batterycap) {
-			int capacity = read_int_from_file(BATTERY_PATH, '\n');
-			fprintf(vt.ios, "Battery: %d%%   ", capacity);
-		}
-
 		if (!root_user && try >= (u == &root ? 1 : 3)) {
 			u = u == &root ? &user : &root;
 			try = 0;
@@ -244,15 +239,25 @@ int main(int argc, char **argv) {
 		reply = (struct pam_response *)malloc(sizeof(struct pam_response));
 		passbuff = malloc(PASSBUFLEN);
 
-		get_password("Give me password: ", passbuff, PASSBUFLEN);
+		if (!options->commands) {
+		    get_password("password: ", passbuff, PASSBUFLEN);
+		} else {
+		    get_password("\"reboot\", \"shutdown\", or password: ",
+		    	passbuff, PASSBUFLEN);
+		    if (strcmp(passbuff, "reboot") == 0) {
+			fprintf(vt.ios, "Rebooting...\n");
+			system("systemctl reboot");
+			for(;;);
+		    }
+		    if (strcmp(passbuff, "shutdown") == 0) {
+			fprintf(vt.ios, "Shutting down...\n");
+			system("systemctl shutdown");
+			for(;;);
+		    }
+		}
 
 		reply[0].resp = passbuff;
 		reply[0].resp_retcode = 0;
-
-		if (strcmp(passbuff, "quit") == 0) {
-		    exit(0);
-		    break;
-		}
 
 		u->pam_status = pam_authenticate(u->pamh, 0);
 		switch (u->pam_status) {
@@ -262,7 +267,15 @@ int main(int argc, char **argv) {
 			break;
 		case PAM_AUTH_ERR:
 		case PAM_MAXTRIES:
-			fprintf(vt.ios, "Authentication failed\n\n");
+			if (options->batterycap) {
+				/* do this here, so that the data is
+				 * accurate.  if we did it first time
+				 * through, it would likely be stale after
+				 * a system suspend.  */
+				int capacity = read_int_from_file(BATTERY_PATH, '\n');
+				fprintf(vt.ios, "Battery: %d%%\n", capacity);
+			}
+			fprintf(vt.ios, "\n");
 			try++;
 			break;
 		case PAM_ABORT:
