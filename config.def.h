@@ -10,3 +10,5 @@ static const char * const SYSRQ_PATH = "/proc/sys/kernel/sysrq";
 /* full path to kernel printk file:			*/
 static const char * const PRINTK_PATH = "/proc/sys/kernel/printk";
 
+/* full path to battery capacity */
+static const char * const BATTERY_PATH = "/sys/class/power_supply/BAT0/capacity";

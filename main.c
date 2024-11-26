@@ -187,6 +187,11 @@ int main(int argc, char **argv) {
 	locked = 1;
 
 	while (locked) {
+		if (options->batterycap) {
+			int capacity = read_int_from_file(BATTERY_PATH, '\n');
+			fprintf(vt.ios, "Battery: %d%%   ", capacity);
+		}
+
 		if (!root_user && try >= (u == &root ? 1 : 3)) {
 			u = u == &root ? &user : &root;
 			try = 0;
