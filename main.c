@@ -28,6 +28,8 @@
 #include <signal.h>
 #include <security/pam_misc.h>
 
+#define PASSBUFLEN 20
+
 static int oldvt;
 static vt_t vt;
 static int oldsysrq;
@@ -36,8 +38,17 @@ static pid_t chpid;
 static int locked;
 static userinfo_t root, user;
 
+struct pam_response *reply;
+
+int function_conversation(int num_msg, const struct pam_message **msg,
+		struct pam_response **resp, void *appdata_ptr)
+{
+	*resp = reply;
+	return PAM_SUCCESS;
+}
+
 static struct pam_conv conv = {
-	misc_conv,
+	function_conversation,
 	NULL
 };
 
@@ -103,10 +114,34 @@ void setup_signal(int signum, void (*handler)(int)) {
 		error(0, errno, "signal %d", signum);
 }
 
+void get_password(char *prompt, char *buffer, size_t size)
+{
+	struct termios oldt, newt;
+	printf("%s", prompt);
+	fflush(stdout);
+
+	// Disable echo
+	tcgetattr(0, &oldt);
+	newt = oldt;
+	newt.c_lflag &= ~ECHO;
+	tcsetattr(0, TCSANOW, &newt);
+
+	// Read password
+	fgets(buffer, size, fdopen(0, "r"));
+	buffer[strcspn(buffer, "\n")] = '\0'; // Remove newline character
+
+	// Re-enable echo
+	tcsetattr(0, TCSANOW, &oldt);
+	printf("\n");
+}
+
 int main(int argc, char **argv) {
 	int try = 0, root_user = 1;
 	uid_t owner;
 	userinfo_t *u = &user;
+
+	char *passbuff;
+
 
 	oldvt = oldsysrq = oldprintk = vt.nr = vt.fd = -1;
 	vt.ios = NULL;
@@ -186,6 +221,7 @@ int main(int argc, char **argv) {
 
 	locked = 1;
 
+
 	while (locked) {
 		if (options->batterycap) {
 			int capacity = read_int_from_file(BATTERY_PATH, '\n');
@@ -200,6 +236,24 @@ int main(int argc, char **argv) {
 			fprintf(vt.ios, "%s: ", root.name);
 			fflush(vt.ios);
 		}
+
+		/* password shenanigans taken from:
+		 *  https://stackoverflow.com/questions/5913865/pam-authentication-for-a-legacy-application/5970078#5970078
+		 */
+
+		reply = (struct pam_response *)malloc(sizeof(struct pam_response));
+		passbuff = malloc(PASSBUFLEN);
+
+		get_password("Give me password: ", passbuff, PASSBUFLEN);
+
+		reply[0].resp = passbuff;
+		reply[0].resp_retcode = 0;
+
+		if (strcmp(passbuff, "quit") == 0) {
+		    exit(0);
+		    break;
+		}
+
 		u->pam_status = pam_authenticate(u->pamh, 0);
 		switch (u->pam_status) {
 		case PAM_SUCCESS:
