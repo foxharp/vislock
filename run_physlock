@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# choose between distribution and local physlock, in case local is
+# missing.
+
+printf -v clearscreen "\e[2J"
+printf -v setscrollingregion "\e[14;16r"
+printf -v positioncursor "\e[14H"
+
+# my /etc/default/console-setup contains:
+#  FONTFACE="Lat15-TerminusBold"
+#  FONTSIZE="8x16"
+#  FONT='Lat15-TerminusBold32x16.psf.gz'
+
+all="${clearscreen}${setscrollingregion}${positioncursor}"
+
+sysphyslock=/usr/bin/physlock
+myphyslock=/usr/local/bin/physlock
+
+if [ -x $myphyslock -a -u $myphyslock ]
+then
+    $myphyslock -dbc -p "$all"
+else
+    $sysphyslock -d -p "$positioncursor"
+fi
+
