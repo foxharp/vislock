@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <security/pam_misc.h>
 
-#define PASSBUFLEN 20
+#define PASSBUFLEN 30
 
 static int oldvt;
 static vt_t vt;
@@ -127,8 +127,20 @@ void get_password(char *prompt, char *buffer, size_t size)
 	tcsetattr(0, TCSANOW, &newt);
 
 	// Read password
-	fgets(buffer, size, fdopen(0, "r"));
-	buffer[strcspn(buffer, "\n")] = '\0'; // Remove newline character
+	// After a suspend, the first character is sometimes NUL, leading
+	// to a guaranteed incorrect password attempt.  Remove NUL characters
+	// from the password as we read it.  Messy.
+	int i = 0;
+	while (i < size-1) {
+	    int c;
+	    c = getchar();
+	    if (c == 0) continue;
+	    if (c == EOF || c == '\n') c = '\0';
+	    buffer[i++] = c;
+	    if (c == '\0')
+		break;
+	}
+	buffer[size-1] = '\0';
 
 	// Re-enable echo
 	tcsetattr(0, TCSANOW, &oldt);
