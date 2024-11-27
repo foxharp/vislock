@@ -1,4 +1,4 @@
-version = 13+
+version = 13pgf 
 
 srcdir = .
 VPATH = $(srcdir)
