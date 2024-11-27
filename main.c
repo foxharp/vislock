@@ -171,11 +171,14 @@ int main(int argc, char **argv) {
 
 	if (get_user_logind(&user, oldvt) == -1 && get_user_utmp(&user, oldvt) == -1)
 		get_user_by_id(&user, owner);
-	get_user_by_id(&root, 0);
-	if (strcmp(user.name, root.name) != 0)
-		root_user = 0;
-	else
-		u = &root;
+
+	if (options->rootunlock) {
+	    get_user_by_id(&root, 0);
+	    if (strcmp(user.name, root.name) != 0)
+		    root_user = 0;
+	    else
+		    u = &root;
+	}
 
 	atexit(cleanup);
 
@@ -224,7 +227,7 @@ int main(int argc, char **argv) {
 
 	while (locked) {
 		if (!root_user && try >= (u == &root ? 1 : 3)) {
-			u = u == &root ? &user : &root;
+			u = (u == &root ? &user : &root);
 			try = 0;
 		}
 		if (u == &root) {
