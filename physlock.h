@@ -58,6 +58,7 @@ typedef struct options_s {
 	int commands;
 	int rootunlock;
 	const char *prompt;
+	const char *fontfile;
 } options_t;
 
 extern const options_t *options;

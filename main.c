@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <pwd.h>
 #include <signal.h>
@@ -147,13 +149,38 @@ void get_password(char *prompt, char *buffer, size_t size)
 	printf("\n");
 }
 
+void set_font()
+{
+	struct stat sb;
+
+	if (stat(options->fontfile, &sb) != 0 || ! S_ISREG(sb.st_mode))
+		error(EXIT_FAILURE, 0, "Font file is not a regular file");
+
+	pid_t pid = fork();
+
+	if (pid < 0) {
+		error(EXIT_FAILURE, errno, "fork");
+	} else if (pid > 0) {
+		int status;
+		waitpid(pid, &status, 0);
+	} else {
+		char *args[] = {"/usr/bin/setfont",
+				    (char *)options->fontfile, NULL};
+	        char *envp[] = {NULL}; 
+
+	        if (execve("/usr/bin/setfont", args, envp) == -1) {
+			error(EXIT_FAILURE, errno, "execve");
+		}
+		// not reached
+	}
+}
+
 int main(int argc, char **argv) {
 	int try = 0, root_user = 1;
 	uid_t owner;
 	userinfo_t *u = &user;
 
 	char *passbuff;
-
 
 	oldvt = oldsysrq = oldprintk = vt.nr = vt.fd = -1;
 	vt.ios = NULL;
@@ -211,6 +238,9 @@ int main(int argc, char **argv) {
 	vt_lock_switch(0);
 	vt_acquire(&vt);
 	vt_lock_switch(1);
+
+	if (options->fontfile)
+		set_font();
 
 	if (options->detach) {
 		chpid = fork();

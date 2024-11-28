@@ -4,6 +4,8 @@ physlock \- lock all consoles / virtual terminals
 .SH SYNOPSIS
 .B physlock
 .RB [ \-dhLlmsv ]
+.RB [ \-f
+.IR FONTFILE ]
 .RB [ \-p
 .IR MSG ]
 .SH DESCRIPTION
@@ -32,6 +34,12 @@ password prompt.
 Fork and detach physlock before prompting for authentication. The parent
 process returns right after everything is set up, so this option is useful for
 use in suspend/hibernate scripts.
+.TP
+.BI "\-f " FONTFILE
+Set the console font using 
+.IR FONTFILE .
+.B FONTFILE
+must be a full pathname, and will be loaded by /usr/bin/setfont.
 .TP
 .B \-h
 Print brief usage information to standard output and exit.
