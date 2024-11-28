@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/select.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -41,6 +43,10 @@ static int locked;
 static userinfo_t root, user;
 
 struct pam_response *reply;
+
+/* scheme to allow access to password before authenticating:
+ *  https://stackoverflow.com/questions/5913865/pam-authentication-for-a-legacy-application/5970078#5970078
+ */
 
 int function_conversation(int num_msg, const struct pam_message **msg,
 		struct pam_response **resp, void *appdata_ptr)
@@ -105,6 +111,10 @@ void sa_handler_exit(int signum) {
 	exit(0);
 }
 
+void sa_handler_refresh(int signum) {
+	return;
+}
+
 void setup_signal(int signum, void (*handler)(int)) {
 	struct sigaction sigact;
 
@@ -114,6 +124,29 @@ void setup_signal(int signum, void (*handler)(int)) {
 	
 	if (sigaction(signum, &sigact, NULL) < 0)
 		error(0, errno, "signal %d", signum);
+}
+
+int avail_c(int secs)
+{
+	fd_set readfds;
+	struct timeval timeout;
+	int fd = 0;
+
+	// Set up the file descriptor set
+	FD_ZERO(&readfds);
+	FD_SET(fd, &readfds);
+
+	timeout.tv_sec = secs;
+	timeout.tv_usec = 0;
+
+	// Use select to check if data is available
+	int result = select(fd + 1, &readfds, NULL, NULL, &timeout);
+	if (result == -1 && errno == EINTR)
+		return 0;
+	if (result < 0)
+		error(EXIT_FAILURE, errno, "select");
+
+	return (result > 0 && FD_ISSET(fd, &readfds));
 }
 
 void get_password(char *prompt, char *buffer, size_t size)
@@ -146,7 +179,26 @@ void get_password(char *prompt, char *buffer, size_t size)
 
 	// Re-enable echo
 	tcsetattr(0, TCSANOW, &oldt);
-	printf("\n");
+
+	if (prompt[0])
+		printf("\n");
+}
+
+
+char *
+timestring()
+{
+	static char outstr[200];
+
+	time_t t;
+	struct tm *tmp;
+
+	t = time(NULL);
+	tmp = localtime(&t);
+
+	(void)strftime(outstr, sizeof(outstr), "%A %b %-e    %l:%M %P", tmp);
+
+	return outstr;
 }
 
 void set_font()
@@ -175,6 +227,13 @@ void set_font()
 	}
 }
 
+#define CLEARLINE "\x1b[2K"
+#define CLEARSCREEN "\x1b[2J"
+#define CHOOSELINE "\x1b[14H"
+#define HIDECURSOR "\x1b[?25l"
+#define RED "\x1b[31m"
+#define NORMAL "\x1b[39m"
+
 int main(int argc, char **argv) {
 	int try = 0, root_user = 1;
 	uid_t owner;
@@ -195,7 +254,7 @@ int main(int argc, char **argv) {
 	setup_signal(SIGQUIT, sa_handler_exit);
 	setup_signal(SIGHUP, SIG_IGN);
 	setup_signal(SIGINT, SIG_IGN);
-	setup_signal(SIGUSR1, SIG_IGN);
+	setup_signal(SIGUSR1, sa_handler_refresh);
 	setup_signal(SIGUSR2, SIG_IGN);
 
 	vt_init();
@@ -260,6 +319,7 @@ int main(int argc, char **argv) {
 	dup2(vt.fd, 1);
 	dup2(vt.fd, 2);
 
+	fprintf(vt.ios, CLEARSCREEN);
 	if (options->prompt != NULL && options->prompt[0] != '\0') {
 		fprintf(vt.ios, "%s\n\n", options->prompt);
 	}
@@ -272,33 +332,51 @@ int main(int argc, char **argv) {
 			u = (u == &root ? &user : &root);
 			try = 0;
 		}
-		if (u == &root) {
-			fprintf(vt.ios, "%s: ", root.name);
-			fflush(vt.ios);
-		}
-
-		/* password shenanigans taken from:
-		 *  https://stackoverflow.com/questions/5913865/pam-authentication-for-a-legacy-application/5970078#5970078
-		 */
 
 		reply = (struct pam_response *)malloc(sizeof(struct pam_response));
 		passbuff = malloc(PASSBUFLEN);
 
-		if (!options->commands) {
-		    get_password("password: ", passbuff, PASSBUFLEN);
-		} else {
-		    get_password("\"reboot\", \"shutdown\", or password: ",
-		    	passbuff, PASSBUFLEN);
-		    if (strcmp(passbuff, "reboot") == 0) {
-			fprintf(vt.ios, "Rebooting...\n");
-			system("systemctl reboot");
-			for(;;);
-		    }
-		    if (strcmp(passbuff, "shutdown") == 0) {
-			fprintf(vt.ios, "Shutting down...\n");
-			system("systemctl shutdown");
-			for(;;);
-		    }
+		if (options->timeofday) {
+			fprintf(vt.ios, CHOOSELINE CLEARLINE "%s\n", timestring());
+		}
+
+		if (options->batterycap) {
+			int capacity = read_int_from_file(BATTERY_PATH, '\n');
+			char *red, *normal;
+			if (capacity < 15) {
+				red = RED; normal = NORMAL;
+			} else {
+				red = ""; normal = "";
+			}
+			fprintf(vt.ios, CLEARLINE "Battery: %s%d%%%s\n",
+				red, capacity, normal);
+		}
+
+		// Build the "prompt" line
+		fprintf(vt.ios, "\n" CLEARLINE);
+		if (options->commands)
+			fprintf(vt.ios, "\"reboot\", \"shutdown\", or ");
+		if (u == &root)
+			fprintf(vt.ios, "%s ", root.name);
+		fprintf(vt.ios, "password: ");
+		fflush(vt.ios);
+
+		if (!avail_c(30))  // SIGUSR1 will cause a screen refresh
+			continue;
+
+		get_password("", passbuff, PASSBUFLEN);
+
+		if (options->commands) {
+			if (strcmp(passbuff, "reboot") == 0) {
+			    fprintf(vt.ios, "Rebooting...\n");
+			    system("systemctl reboot");
+			    for(;;);
+			}
+			if (strcmp(passbuff, "shutdown") == 0) {
+			    fprintf(vt.ios, "Shutting down...\n");
+			    system("systemctl shutdown");
+			    for(;;);
+			}
 		}
 
 		reply[0].resp = passbuff;
@@ -312,15 +390,6 @@ int main(int argc, char **argv) {
 			break;
 		case PAM_AUTH_ERR:
 		case PAM_MAXTRIES:
-			if (options->batterycap) {
-				/* do this here, so that the data is
-				 * accurate.  if we did it first time
-				 * through, it would likely be stale after
-				 * a system suspend.  */
-				int capacity = read_int_from_file(BATTERY_PATH, '\n');
-				fprintf(vt.ios, "Battery: %d%%\n", capacity);
-			}
-			fprintf(vt.ios, "\n");
 			try++;
 			break;
 		case PAM_ABORT:

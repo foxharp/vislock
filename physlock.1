@@ -19,16 +19,21 @@ API.
 The behaviour of physlock is completely controlled via command-line arguments,
 it does not rely on environment variables.
 physlock uses the utmp file to identify the owner of the current session (i.e.
-active tty) and prompts for her password to unlock the computer.
+active tty) and prompts for their password to unlock the computer.
+.P
+Since physlock can display dynamic values on the lock screen (i.e. time of
+day, and battery capacity), it will also respond to SIGUSR1 by refreshing
+its screen, which is useful after the system resumes from suspend.  (The
+screen will update within 30 seconds, even without SIGUSR1.)
 .SH OPTIONS
 .TP
 .B \-b
-Show battery status at each password prompt.  Currently hardcoded to use
+Show battery capacity.  Currently hardcoded to use
 the value of /sys/class/power_supply/BAT0/capacity.
 .TP
 .B \-c
-Allow "shutdown" and "reboot" commands (literally) as answers to the
-password prompt.
+Allow "shutdown" and "reboot" commands (literally), in addition to
+the user password.  No authentication is performed.
 .TP
 .B \-d
 Fork and detach physlock before prompting for authentication. The parent
@@ -58,13 +63,17 @@ Mute kernel messages on console while physlock is running.
 .BI "\-p " MSG
 Display
 .I MSG
-before the password prompt.
+when physlock starts.
 .TP
 .B \-r
-Causes physlock to prompt for the route password every fourth prompt. 
+Causes physlock to ask for the root password, rather than that of
+the logged-in user, every fourth attempt. 
 .TP
 .B \-s
 Disable SysRq mechanism while physlock is running.
+.TP
+.B \-t
+Display date and time.
 .TP
 .B \-v
 Print version information to standard output and exit.

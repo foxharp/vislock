@@ -55,6 +55,7 @@ typedef struct options_s {
 	int lock_switch;
 	int mute_kernel_messages;
 	int batterycap;
+	int timeofday;
 	int commands;
 	int rootunlock;
 	const char *prompt;

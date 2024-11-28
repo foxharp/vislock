@@ -1,26 +1,34 @@
 #!/bin/bash
 
-# choose between distribution and local physlock, in case local is
-# missing.
+case $1 in
+-r)
+	# cause a screen refresh.  useful after a suspend/resume
+	killall -USR1 physlock
+	exit
+	;;
+esac
 
-printf -v clearscreen "\e[2J"
-printf -v setscrollingregion "\e[14;16r"
-printf -v positioncursor "\e[14H"
+# set up a lock, so we only start one copy of physlock at a time
+(
+	flock -n 9 || exit 1
 
-# my /etc/default/console-setup contains:
-#  FONTFACE="Lat15-TerminusBold"
-#  FONTSIZE="8x16"
-#  FONT='Lat15-TerminusBold32x16.psf.gz'
+	me=${0##*/}
 
-all="${clearscreen}${setscrollingregion}${positioncursor}"
+	# don't lock the machine if there are no users
+	test "$(users)" || exit 0
 
-sysphyslock=/usr/bin/physlock
-myphyslock=/usr/local/bin/physlock
+	# prefer our modified physlock, but fall back to the system one
+	# if ours isn't installed correctly
+	myphyslock=/usr/local/bin/physlock
+	sysphyslock=/usr/bin/physlock
 
-if [ -x $myphyslock -a -u $myphyslock ]
-then
-    $myphyslock -dbc -p "$all"
-else
-    $sysphyslock -d -p "$positioncursor"
-fi
+	if [ -x $myphyslock -a -u $myphyslock ]
+	then
+	    $myphyslock -dbct \
+		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
+	else
+	    printf -v positioncursor "\e[14H"
+	    $sysphyslock -d -p "$positioncursor"
+	fi
 
+) 9<$0

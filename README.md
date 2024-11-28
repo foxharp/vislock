@@ -52,6 +52,9 @@ active tty) and prompts for her password to unlock the computer.
 
 The following command-line arguments are supported:
 
+    -b       display the battery capacity on the lock screen
+    -c       allow "reboot" and "suspend" responses, in lieu of password,
+             with obvious result
     -d       fork and detach, parent returns after everything is set up
              (useful for suspend/hibernate scripts)
     -h       print short usage help and exit
@@ -60,4 +63,6 @@ The following command-line arguments are supported:
     -m       mute kernel messages on console while physlock is running
     -p MSG   Display MSG before the password prompt
     -s       disable sysrq key while physlock is running
+    -r       ask for root's password, rather than the user's, every 4th try
+    -t       display the time of day on the lock screen
     -v       print version information and exit
