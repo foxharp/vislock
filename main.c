@@ -167,13 +167,15 @@ void get_password(char *prompt, char *buffer, size_t size)
 	// from the password as we read it.  Messy.
 	int i = 0;
 	while (i < size-1) {
-	    int c;
-	    c = getchar();
-	    if (c == 0) continue;
-	    if (c == EOF || c == '\n') c = '\0';
-	    buffer[i++] = c;
-	    if (c == '\0')
-		break;
+		int c;
+		c = getchar();
+		if (c == '\0')  // skip it
+			continue;
+		if (c == EOF || c == '\n')  // kill it
+			c = '\0';
+		buffer[i++] = c;
+		if (c == '\0')
+			break;
 	}
 	buffer[size-1] = '\0';
 
@@ -217,10 +219,10 @@ void set_font()
 		waitpid(pid, &status, 0);
 	} else {
 		char *args[] = {"/usr/bin/setfont",
-				    (char *)options->fontfile, NULL};
-	        char *envp[] = {NULL}; 
+				(char *)options->fontfile, NULL};
+		char *envp[] = {NULL}; 
 
-	        if (execve("/usr/bin/setfont", args, envp) == -1) {
+		if (execve("/usr/bin/setfont", args, envp) == -1) {
 			error(EXIT_FAILURE, errno, "execve");
 		}
 		// not reached
@@ -271,11 +273,11 @@ int main(int argc, char **argv) {
 		get_user_by_id(&user, owner);
 
 	if (options->rootunlock) {
-	    get_user_by_id(&root, 0);
-	    if (strcmp(user.name, root.name) != 0)
-		    root_user = 0;
-	    else
-		    u = &root;
+		get_user_by_id(&root, 0);
+		if (strcmp(user.name, root.name) != 0)
+			root_user = 0;
+		else
+			u = &root;
 	}
 
 	atexit(cleanup);
@@ -368,14 +370,14 @@ int main(int argc, char **argv) {
 
 		if (options->commands) {
 			if (strcmp(passbuff, "reboot") == 0) {
-			    fprintf(vt.ios, "Rebooting...\n");
-			    system("systemctl reboot");
-			    for(;;);
+				fprintf(vt.ios, "Rebooting...\n");
+				system("systemctl reboot");
+				for(;;);
 			}
 			if (strcmp(passbuff, "shutdown") == 0) {
-			    fprintf(vt.ios, "Shutting down...\n");
-			    system("systemctl shutdown");
-			    for(;;);
+				fprintf(vt.ios, "Shutting down...\n");
+				system("systemctl shutdown");
+				for(;;);
 			}
 		}
 
