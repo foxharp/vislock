@@ -25,6 +25,14 @@ Since physlock can display dynamic values on the lock screen (i.e. time of
 day, and battery capacity), it will also respond to SIGUSR1 by refreshing
 its screen, which is useful after the system resumes from suspend.  (The
 screen will update within 30 seconds, even without SIGUSR1.)
+.P
+physlock will accept the password of the user which owns the VT at
+which physlock was invoked.  If no user is logged in on that VT, the
+root password will be required.  WARNING:  This means that if physlock
+is invoked independently of a login session, perhaps based on timeout,
+or by a special key, and there is no password for root, then you may
+be locked out of the machine.  Having a root password available is
+recommended when using physlock.
 .SH OPTIONS
 .TP
 .B \-b
