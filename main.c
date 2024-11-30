@@ -237,9 +237,10 @@ void set_font()
 #define NORMAL "\x1b[39m"
 
 int main(int argc, char **argv) {
-	int try = 0, fail = 0, root_user = 1;
+	int tries = 0;
 	uid_t owner;
 	userinfo_t *u = &user;
+	int user_is_root;
 
 	char *passbuff;
 
@@ -269,16 +270,14 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	if (get_user_logind(&user, oldvt) == -1 && get_user_utmp(&user, oldvt) == -1)
+	if (get_user_logind(&user, oldvt) == -1 &&
+			get_user_utmp(&user, oldvt) == -1) {
 		get_user_by_id(&user, owner);
-
-	if (options->rootunlock) {
-		get_user_by_id(&root, 0);
-		if (strcmp(user.name, root.name) != 0)
-			root_user = 0;
-		else
-			u = &root;
 	}
+
+	get_user_by_id(&root, 0);
+
+	user_is_root = (strcmp(user.name, root.name) == 0);
 
 	atexit(cleanup);
 
@@ -330,10 +329,9 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
-		if (!root_user && try >= (u == &root ? 1 : 3)) {
-			u = (u == &root ? &user : &root);
-			try = 0;
-		}
+		u = &user;
+		if (options->rootunlock && (tries % 4) == 3)
+		    	u = &root;
 
 		reply = (struct pam_response *)malloc(sizeof(struct pam_response));
 		passbuff = malloc(PASSBUFLEN);
@@ -355,15 +353,15 @@ int main(int argc, char **argv) {
 		}
 
 		fprintf(vt.ios, CLEARLINE);
-		if (fail) {
+		if (tries) {
 			int i;
-			for (i = 0; i < fail; i++) fprintf(vt.ios, ":-( ");
+			for (i = 0; i < tries; i++) fprintf(vt.ios, ":-( ");
 		}
 		// Build the "prompt" line
 		fprintf(vt.ios, "\n" CLEARLINE);
 		if (options->commands)
 			fprintf(vt.ios, "\"reboot\", \"shutdown\", or ");
-		if (u == &root)
+		if (user_is_root || u == &root)
 			fprintf(vt.ios, "%s ", root.name);
 		fprintf(vt.ios, "password: ");
 		fflush(vt.ios);
@@ -397,8 +395,7 @@ int main(int argc, char **argv) {
 			break;
 		case PAM_AUTH_ERR:
 		case PAM_MAXTRIES:
-			try++;
-			if (++fail > 10) fail = 1;
+			if (++tries > 12) tries = 1;
 			break;
 		case PAM_ABORT:
 		case PAM_CRED_INSUFFICIENT:
