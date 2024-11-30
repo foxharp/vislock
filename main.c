@@ -270,7 +270,9 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	if (get_user_logind(&user, oldvt) == -1 &&
+	if (options->username) {
+		get_user_by_name(&user, options->username);
+	} else if (get_user_logind(&user, oldvt) == -1 &&
 			get_user_utmp(&user, oldvt) == -1) {
 		get_user_by_id(&user, owner);
 	}

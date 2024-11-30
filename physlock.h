@@ -60,6 +60,7 @@ typedef struct options_s {
 	int rootunlock;
 	const char *prompt;
 	const char *fontfile;
+	const char *username;
 } options_t;
 
 extern const options_t *options;

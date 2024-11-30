@@ -32,7 +32,8 @@ root password will be required.  WARNING:  This means that if physlock
 is invoked independently of a login session, perhaps based on timeout,
 or by a special key, and there is no password for root, then you may
 be locked out of the machine.  Having a root password available is
-recommended when using physlock.
+recommended when using physlock.  Using the -u USER option will force
+which password can unlock the machine.
 .SH OPTIONS
 .TP
 .B \-b
@@ -82,6 +83,9 @@ Disable SysRq mechanism while physlock is running.
 .TP
 .B \-t
 Display date and time.
+.TP
+.BI "\-u " USER
+Unlock when USER's password is given (or root's, if -r is used as well).
 .TP
 .B \-v
 Print version information to standard output and exit.

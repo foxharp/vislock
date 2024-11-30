@@ -28,7 +28,7 @@ static options_t _options;
 const options_t *options = (const options_t*) &_options;
 
 void print_usage() {
-	printf("usage: physlock [-bcdhLlmrstv] [-f FONTFILE ] [-p MSG]\n");
+	printf("usage: physlock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
 }
 
 void print_version() {
@@ -46,11 +46,17 @@ void parse_options(int argc, char **argv) {
 	_options.lock_switch = -1;
 	_options.mute_kernel_messages = 0;
 
-	while ((opt = getopt(argc, argv, "bcdf:hLlmp:rstv")) != -1) {
+	while ((opt = getopt(argc, argv, "bcdf:hLlmp:rstu:v")) != -1) {
 		switch (opt) {
 			case '?':
 				print_usage();
 				exit(1);
+			case 'b':
+				_options.batterycap = 1;
+				break;
+			case 'c':
+				_options.commands = 1;
+				break;
 			case 'd':
 				_options.detach = 1;
 				break;
@@ -72,8 +78,8 @@ void parse_options(int argc, char **argv) {
 			case 'p':
 				_options.prompt = optarg;
 				break;
-			case 'b':
-				_options.batterycap = 1;
+			case 'r':
+				_options.rootunlock = 1;
 				break;
 			case 's':
 				_options.disable_sysrq = 1;
@@ -81,11 +87,8 @@ void parse_options(int argc, char **argv) {
 			case 't':
 				_options.timeofday = 1;
 				break;
-			case 'c':
-				_options.commands = 1;
-				break;
-			case 'r':
-				_options.rootunlock = 1;
+			case 'u':
+				_options.username = optarg;
 				break;
 			case 'v':
 				print_version();

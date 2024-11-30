@@ -24,7 +24,7 @@ esac
 
 	if [ -x $myphyslock -a -u $myphyslock ]
 	then
-	    $myphyslock -dbct \
+	    $myphyslock -dbct -u pgf \
 		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 	else
 	    printf -v positioncursor "\e[14H"
