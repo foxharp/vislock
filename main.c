@@ -237,7 +237,7 @@ void set_font()
 #define NORMAL "\x1b[39m"
 
 int main(int argc, char **argv) {
-	int try = 0, root_user = 1;
+	int try = 0, fail = 0, root_user = 1;
 	uid_t owner;
 	userinfo_t *u = &user;
 
@@ -354,6 +354,11 @@ int main(int argc, char **argv) {
 				red, capacity, normal);
 		}
 
+		fprintf(vt.ios, CLEARLINE);
+		if (fail) {
+			int i;
+			for (i = 0; i < fail; i++) fprintf(vt.ios, ":-( ");
+		}
 		// Build the "prompt" line
 		fprintf(vt.ios, "\n" CLEARLINE);
 		if (options->commands)
@@ -393,6 +398,7 @@ int main(int argc, char **argv) {
 		case PAM_AUTH_ERR:
 		case PAM_MAXTRIES:
 			try++;
+			if (++fail > 10) fail = 1;
 			break;
 		case PAM_ABORT:
 		case PAM_CRED_INSUFFICIENT:
