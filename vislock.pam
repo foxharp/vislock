@@ -1,6 +1,6 @@
 #%PAM-1.0
 
-# Sample /etc/pam.d/physlock
+# Sample /etc/pam.d/vislock
 
 auth      include  system-auth
 account   include  system-auth

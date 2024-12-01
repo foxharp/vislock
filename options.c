@@ -1,6 +1,6 @@
 /* Copyright 2013 Bert Muennich
  *
- * This file is part of physlock.
+ * This file is part of vislock.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include "physlock.h"
+#include "vislock.h"
 #include "version.h"
 
 #include <stdlib.h>
@@ -28,11 +28,11 @@ static options_t _options;
 const options_t *options = (const options_t*) &_options;
 
 void print_usage() {
-	fprintf(stderr, "usage: physlock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
+	fprintf(stderr, "usage: vislock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
 }
 
 void print_version() {
-	puts("physlock " VERSION);
+	puts("vislock " VERSION);
 }
 
 void parse_options(int argc, char **argv) {

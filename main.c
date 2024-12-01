@@ -1,6 +1,6 @@
 /* Copyright 2013 Bert Muennich
  *
- * This file is part of physlock.
+ * This file is part of vislock.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include "physlock.h"
+#include "vislock.h"
 #include "config.h"
 
 #include <stdlib.h>
@@ -66,7 +66,7 @@ static void get_pam(userinfo_t *uinfo) {
 	if (!getpwnam(uinfo->name))
 		error(EXIT_FAILURE, 0, "No such user '%s'", uinfo->name);
 
-	if (pam_start("physlock", uinfo->name, &conv, &uinfo->pamh) != PAM_SUCCESS)
+	if (pam_start("vislock", uinfo->name, &conv, &uinfo->pamh) != PAM_SUCCESS)
 		error(EXIT_FAILURE, 0, "pam_start failure");
 }
 
@@ -210,8 +210,8 @@ do_pam_auth(userinfo_t *u, char *pass) {
 
 	default:
 		/* intermittent error?
-		 * see https://github.com/xyb3rt/physlock/commit/15744f5a2bf05178c1eafc7c4f8a46ffabb29184
-		 * and https://github.com/xyb3rt/physlock/issues/68
+		 * see https://github.com/xyb3rt/vislock/commit/15744f5a2bf05178c1eafc7c4f8a46ffabb29184
+		 * and https://github.com/xyb3rt/vislock/issues/68
 		 */
 		sleep(5);
 		return -3;

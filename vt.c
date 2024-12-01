@@ -1,6 +1,6 @@
 /* Copyright 2013 Bert Muennich
  *
- * This file is part of physlock.
+ * This file is part of vislock.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include "physlock.h"
+#include "vislock.h"
 #include "config.h"
 
 #include <fcntl.h>

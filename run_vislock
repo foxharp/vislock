@@ -3,12 +3,12 @@
 case $1 in
 -r)
 	# cause a screen refresh.  useful after a suspend/resume
-	killall -USR1 physlock
+	killall -USR1 vislock
 	exit
 	;;
 esac
 
-# set up a lock, so we only start one copy of physlock at a time
+# set up a lock, so we only start one copy of vislock at a time
 (
 	flock -n 9 || exit 1
 
@@ -17,18 +17,18 @@ esac
 	# don't lock the machine if there are no users
 	test "$(users)" || exit 0
 
-	# prefer our modified physlock, but fall back to the system one
+	# prefer our modified vislock, but fall back to the system one
 	# if ours isn't installed correctly
-	myphyslock=/usr/local/bin/physlock
-	sysphyslock=/usr/bin/physlock
+	myvislock=/usr/local/bin/vislock
+	sysvislock=/usr/bin/physlock
 
-	if [ -x $myphyslock -a -u $myphyslock ]
+	if [ -x $myvislock -a -u $myvislock ]
 	then
-	    $myphyslock -dbct -u pgf -u jdh \
+	    $myvislock -dbct -u pgf -u jdh \
 		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 	else
 	    printf -v positioncursor "\e[14H"
-	    $sysphyslock -d -p "$positioncursor"
+	    $sysvislock -d -p "$positioncursor"
 	fi
 
 ) 9<$0

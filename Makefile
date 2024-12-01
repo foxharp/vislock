@@ -23,18 +23,18 @@ ldlibs = $(LDLIBS) -lpam -lpam_misc \
 
 objs = main.o options.o util.o vt.o
 
-all: physlock
+all: vislock
 
 .PHONY: all clean install uninstall
 .SUFFIXES:
 .SUFFIXES: .c .o
 $(V).SILENT:
 
-physlock: $(objs)
+vislock: $(objs)
 	@echo "LINK $@"
 	$(CC) $(LDFLAGS) -o $@ $(objs) $(ldlibs)
 
-$(objs): Makefile physlock.h config.h
+$(objs): Makefile vislock.h config.h
 options.o: version.h
 
 .c.o:
@@ -53,19 +53,19 @@ version.h: Makefile .git/index
 .git/index:
 
 clean:
-	rm -f *.o physlock
+	rm -f *.o vislock
 
 install: all
-	@echo "INSTALL bin/physlock"
-	install -D -m 4755 -o root -g root physlock $(DESTDIR)$(PREFIX)/bin/physlock
-	@echo "INSTALL physlock.1"
+	@echo "INSTALL bin/vislock"
+	install -D -m 4755 -o root -g root vislock $(DESTDIR)$(PREFIX)/bin/vislock
+	@echo "INSTALL vislock.1"
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	sed "s/VERSION/$(version)/g" physlock.1 > $(DESTDIR)$(MANPREFIX)/man1/physlock.1
-	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/physlock.1
+	sed "s/VERSION/$(version)/g" vislock.1 > $(DESTDIR)$(MANPREFIX)/man1/vislock.1
+	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/vislock.1
 
 uninstall:
-	@echo "REMOVE bin/physlock"
-	rm -f $(DESTDIR)$(PREFIX)/bin/physlock
-	@echo "REMOVE physlock.1"
-	rm -f $(DESTDIR)$(MANPREFIX)/man1/physlock.1
+	@echo "REMOVE bin/vislock"
+	rm -f $(DESTDIR)$(PREFIX)/bin/vislock
+	@echo "REMOVE vislock.1"
+	rm -f $(DESTDIR)$(MANPREFIX)/man1/vislock.1
 

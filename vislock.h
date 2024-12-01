@@ -1,6 +1,6 @@
 /* Copyright 2018 Bert Muennich
  *
- * This file is part of physlock.
+ * This file is part of vislock.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,11 +1,11 @@
 Control physical access to a linux computer by locking all of its virtual
 terminals.
 
-physlock only allows the user of the active session (the user logged in on the
+vislock only allows the user of the active session (the user logged in on the
 foreground virtual terminal) and the root user to unlock the computer and uses
 PAM for authentication.
 
-physlock uses 3 mechanisms to detect the user of the active session:
+vislock uses 3 mechanisms to detect the user of the active session:
 
 1. Querying systemd-logind(1) or elogind(8) if compiled with either
    `HAVE_SYSTEMD=1` or `HAVE_ELOGIND=1`
@@ -15,21 +15,21 @@ physlock uses 3 mechanisms to detect the user of the active session:
 
 Installation
 ------------
-physlock is build using the commands:
+vislock is build using the commands:
 
     $ make
     # make install
 
 Please note, that the latter one requires root privileges.
-By default, physlock is installed using the prefix `/usr/local`, so the full
-path of the executable will be `/usr/local/bin/physlock`.
+By default, vislock is installed using the prefix `/usr/local`, so the full
+path of the executable will be `/usr/local/bin/vislock`.
 
 You can install it into a directory of your choice by overwriting the `PREFIX`
 macro in the second command:
 
     # make PREFIX="/your/dir" install
 
-Please also note, that the physlock executable will have root ownership and the
+Please also note, that the vislock executable will have root ownership and the
 setuid bit set.
 
 All build-time specific settings are set in the file `config.h`. Please check
@@ -38,16 +38,16 @@ already exist, then you have to create it with the following command:
 
     $ make config.h
 
-You also have to make sure that physlock works with your PAM configuration. If
+You also have to make sure that vislock works with your PAM configuration. If
 you have a restrictive PAM fallback config file `/etc/pam.d/other`, then you
-need to create a suitable PAM config file for physlock named
-`/etc/pam.d/physlock`. The sample `physlock.pam` should work for most users.
+need to create a suitable PAM config file for vislock named
+`/etc/pam.d/vislock`. The sample `vislock.pam` should work for most users.
 
 Usage
 -----
-The behaviour of physlock is completely controlled via command-line arguments,
+The behaviour of vislock is completely controlled via command-line arguments,
 it does not rely on environment variables.
-physlock uses the utmp file to identify the owner of the current session (i.e.
+vislock uses the utmp file to identify the owner of the current session (i.e.
 active tty) and prompts for her password to unlock the computer.
 
 The following command-line arguments are supported:
@@ -60,9 +60,9 @@ The following command-line arguments are supported:
     -h       print short usage help and exit
     -l       only lock console switching
     -L       only enable console switching
-    -m       mute kernel messages on console while physlock is running
+    -m       mute kernel messages on console while vislock is running
     -p MSG   Display MSG before the password prompt
-    -s       disable sysrq key while physlock is running
+    -s       disable sysrq key while vislock is running
     -r       ask for root's password, rather than the user's, every 4th try
     -t       display the time of day on the lock screen
     -v       print version information and exit

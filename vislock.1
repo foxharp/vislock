@@ -1,38 +1,41 @@
-.TH PHYSLOCK 1 physlock\-VERSION
+.TH PHYSLOCK 1 vislock\-VERSION
 .SH NAME
-physlock \- lock all consoles / virtual terminals
+vislock \- lock all consoles / virtual terminals
 .SH SYNOPSIS
-.B physlock
+.B vislock
 .RB [ \-dhLlmsv ]
 .RB [ \-f
 .IR FONTFILE ]
 .RB [ \-p
 .IR MSG ]
 .SH DESCRIPTION
+vislock is a fork of the physlock screen locker, renamed to avoid
+confusion with the original, and with the distribution packages named
+"physlock".
+.P
 physlock is an alternative to vlock, it is equivalent to `vlock \-an'. It is
 written because vlock blocks some linux kernel mechanisms like hibernate and
 suspend and can therefore only be used with some limitations.
 .P
-physlock is designed to be lightweight, but highly depends on the kernels ioctl
-API.
+vislock adds some features to physlock, mostly driven by personal whim.
 .P
-The behaviour of physlock is completely controlled via command-line arguments,
+The behaviour of vislock is completely controlled via command-line arguments,
 it does not rely on environment variables.
-physlock uses the utmp file to identify the owner of the current session (i.e.
+vislock uses the utmp file to identify the owner of the current session (i.e.
 active tty) and prompts for their password to unlock the computer.
 .P
-Since physlock can display dynamic values on the lock screen (i.e. time of
+Since vislock can display dynamic values on the lock screen (i.e. time of
 day, and battery capacity), it will also respond to SIGUSR1 by refreshing
 its screen, which is useful after the system resumes from suspend.  (The
 screen will update within 30 seconds, even without SIGUSR1.)
 .P
-physlock will accept the password of any of the users listed on the command
+vislock will accept the password of any of the users listed on the command
 line.  This can include 'root', if desired, or any other user who might
 need access to the machine.
 .SH OPTIONS
 .TP
 .B \-b
-Show battery capacity.  Currently hardcoded to use
+Show battery capacity on lockscreen.  Currently hardcoded to use
 the value of /sys/class/power_supply/BAT0/capacity.
 .TP
 .B \-c
@@ -40,7 +43,7 @@ Allow "shutdown" and "reboot" commands (literally), in addition to
 the user password.  No authentication is performed.
 .TP
 .B \-d
-Fork and detach physlock before prompting for authentication. The parent
+Fork and detach vislock before prompting for authentication. The parent
 process returns right after everything is set up, so this option is useful for
 use in suspend/hibernate scripts.
 .TP
@@ -58,35 +61,36 @@ Only lock console switching and exit.
 .TP
 .B \-L
 Only enable (unlock) console switching and exit. This is useful when a prior
-instance of physlock has crashed and left the console switching mechanism
+instance of vislock has crashed and left the console switching mechanism
 locked.
 .TP
 .B \-m
-Mute kernel messages on console while physlock is running.
+Mute kernel messages on console while vislock is running.
 .TP
 .BI "\-p " MSG
 Display
 .I MSG
-when physlock starts.
+when vislock starts.
 .TP
 .B \-s
-Disable SysRq mechanism while physlock is running.
+Disable SysRq mechanism while vislock is running.
 .TP
 .B \-t
-Display date and time.
+Display date and time on the lockscreen.
 .TP
 .BI "\-u " USER
 Unlock when USER's password is given.  If given multiple times, 
-any of the respective passwords will cause an unlock.
+any of the respective user passwords will cause an unlock.
 .TP
 .B \-v
 Print version information to standard output and exit.
 .SH AUTHORS
 .TP
-Bert Muennich <ber.t at gmx.com>
-Battery levels, shutdown/reboot commands and others: Paul Fox 
+Bert Muennich <ber.t at gmx.com> wrote physlock.
+Paul Fox (foxharp on github) add support for battery capacity display,
+shutdown/reboot commands and more.  (2024)
 .SH HOMEPAGE
 .TP
-http://github.com/muennich/physlock
+http://github.com/muennich/vislock
 .SH SEE ALSO
 .BR vlock (1)
