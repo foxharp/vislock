@@ -12,3 +12,8 @@ static const char * const PRINTK_PATH = "/proc/sys/kernel/printk";
 
 /* full path to battery capacity */
 static const char * const BATTERY_PATH = "/sys/class/power_supply/BAT0/capacity";
+
+/* shutdown and reboot commands */
+static const char * const REBOOT_CMD = "/bin/systemctl reboot";
+static const char * const SHUTDOWN_CMD = "/bin/systemctl poweroff";
+

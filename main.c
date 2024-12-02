@@ -428,14 +428,16 @@ int main(int argc, char **argv) {
 
 		if (options->commands) {
 			if (strcmp(passbuff, "reboot") == 0) {
-				fprintf(vt.ios, "Rebooting...\n");
-				system("systemctl reboot");
-				for(;;);
+				fprintf(vt.ios, "\nRebooting...\n");
+				system(REBOOT_CMD);
+				sleep(10);
+				continue;
 			}
 			if (strcmp(passbuff, "shutdown") == 0) {
-				fprintf(vt.ios, "Shutting down...\n");
-				system("systemctl shutdown");
-				for(;;);
+				fprintf(vt.ios, "\nShutting down...\n");
+				system(SHUTDOWN_CMD);
+				sleep(10);
+				continue;
 			}
 		}
 
