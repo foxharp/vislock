@@ -33,6 +33,7 @@
 #include <security/pam_misc.h>
 
 #define PASSBUFLEN 30
+#define NUSERS 10
 
 static int oldvt;
 static vt_t vt;
@@ -80,13 +81,34 @@ CLEANUP void free_user(userinfo_t *uinfo) {
 		pam_end(uinfo->pamh, uinfo->pam_status);
 }
 
+
+
+int nusers;
+const char *usernames[NUSERS];
+
+void add_username(const char *name) {
+	int i;
+
+	// check for duplicates
+	for(i = 0; i < nusers; i++) {
+		if (strcmp(usernames[i], name) == 0)
+			return;
+	}
+
+	if (nusers < NUSERS) {
+		usernames[nusers++] = estrdup(name);
+	} else {
+		fprintf(stderr, "Warning:  Too many users, max %d\n", NUSERS);
+	}
+}
+
 void cleanup() {
 	if (options->detach && chpid > 0)
 		/* No cleanup in parent after successful fork */
 		return;
 	int i;
-	for (i = 0; i < options->nusers; i++)
-	    free_user(&users[i]);
+	for (i = 0; i < nusers; i++)
+		free_user(&users[i]);
 	close(0);
 	close(1);
 	close(2);
@@ -270,7 +292,6 @@ void set_font()
 
 int main(int argc, char **argv) {
 	int tries = 0;
-	uid_t owner;
 	int i;
 
 	char *passbuff;
@@ -281,8 +302,18 @@ int main(int argc, char **argv) {
 	error_init(2);
 
 	parse_options(argc, argv);
-	if (options->nusers == 0)
-		error(EXIT_FAILURE, 0, "No users specified");
+
+	/* Users from -u options are already in usernames[].  Now
+	 * add users from either logind or utmp.
+	 */
+	if (!get_users_logind())
+		get_users_utmp();
+
+	/* this can occur if no one is logged in to the machine, in
+	 * which case it's proper that the locker not activate.
+	 */
+	if (nusers == 0)
+		error(EXIT_FAILURE, 0, "No users found or specified");
 
 	if (geteuid() != 0)
 		error(EXIT_FAILURE, 0, "Must be root!");
@@ -295,7 +326,7 @@ int main(int argc, char **argv) {
 	setup_signal(SIGUSR2, SIG_IGN);
 
 	vt_init();
-	vt_get_current(&oldvt, &owner);
+	vt_get_current(&oldvt);
 
 	if (options->lock_switch != -1) {
 		if (vt_lock_switch(options->lock_switch) == -1)
@@ -304,8 +335,8 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	for (i = 0; i < options->nusers; i++)
-		get_user_by_name(&users[i], options->usernames[i]);
+	for (i = 0; i < nusers; i++)
+		get_user_by_name(&users[i], usernames[i]);
 
 	atexit(cleanup);
 
@@ -357,6 +388,7 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
+		fprintf(vt.ios, CHOOSELINE);
 
 		if (options->timeofday) {
 			fprintf(vt.ios, CHOOSELINE CLEARLINE "%s\n",
@@ -382,7 +414,7 @@ int main(int argc, char **argv) {
 		// Build the "prompt" line
 		fprintf(vt.ios, "\n" CLEARLINE);
 		if (options->commands)
-			fprintf(vt.ios, "\"reboot\", \"shutdown\", or ");
+			fprintf(vt.ios, "\"reboot\", \"shutdown\", or a ");
 		fprintf(vt.ios, "password: ");
 		fflush(vt.ios);
 
@@ -407,7 +439,7 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		for (i = 0; i < options->nusers; i++) {
+		for (i = 0; i < nusers; i++) {
 			if (do_pam_auth(&users[i], passbuff) == 0) {
 				locked = 0;
 				break;

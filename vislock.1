@@ -29,9 +29,10 @@ day, and battery capacity), it will also respond to SIGUSR1 by refreshing
 its screen, which is useful after the system resumes from suspend.  (The
 screen will update within 30 seconds, even without SIGUSR1.)
 .P
-vislock will accept the password of any of the users listed on the command
-line.  This can include 'root', if desired, or any other user who might
-need access to the machine.
+vislock will accept the password for any of the local users whose
+names are obtained from logind (or utmp), as well as for users listed
+on the command line with -u options.
+
 .SH OPTIONS
 .TP
 .B \-b

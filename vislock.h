@@ -41,15 +41,12 @@ typedef struct userinfo_s {
 	pam_handle_t *pamh;
 } userinfo_t;
 
-void get_user_by_id(userinfo_t*, uid_t);
 void get_user_by_name(userinfo_t*, const char*);
 CLEANUP void free_user(userinfo_t*);
-int authenticate(userinfo_t*);
 
+void add_username(const char *);
 
 /* options.c */
-
-#define NUSERS 10
 
 typedef struct options_s {
 	int detach;
@@ -61,8 +58,6 @@ typedef struct options_s {
 	int commands;
 	const char *prompt;
 	const char *fontfile;
-	int nusers;
-	const char *usernames[NUSERS];
 } options_t;
 
 extern const options_t *options;
@@ -72,8 +67,8 @@ void parse_options(int, char**);
 
 /* session.c */
 
-int get_user_logind(userinfo_t*, int);
-int get_user_utmp(userinfo_t*, int);
+int get_users_logind(void);
+void get_users_utmp(void);
 
 
 /* util.h */
@@ -99,7 +94,7 @@ typedef struct vt_s {
 
 void vt_init();
 CLEANUP void vt_destroy();
-void vt_get_current(int*, uid_t*);
+void vt_get_current(int*);
 CLEANUP int vt_lock_switch(int);
 void vt_acquire(vt_t*);
 void vt_reopen(vt_t*);

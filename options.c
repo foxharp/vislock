@@ -85,13 +85,7 @@ void parse_options(int argc, char **argv) {
 				_options.timeofday = 1;
 				break;
 			case 'u':
-				if (_options.nusers < NUSERS) {
-					_options.usernames[_options.nusers++] = optarg;
-				} else {
-				fprintf(stderr,
-					"Too many users, max %d\n", NUSERS);
-				exit(1);
-				}
+				add_username(optarg);
 				break;
 			case 'v':
 				print_version();

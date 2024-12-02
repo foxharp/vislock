@@ -45,17 +45,14 @@ CLEANUP void vt_destroy() {
 	}
 }
 
-void vt_get_current(int *nr, uid_t *owner) {
+void vt_get_current(int *nr) {
 	int ret;
-	struct stat fstat;
 	struct vt_stat vtstat;
 
 	while ((ret = ioctl(fd, VT_GETSTATE, &vtstat)) == -1 && errno == EINTR);
 	if (ret == -1)
 		error(EXIT_FAILURE, errno, "%s: VT_GETSTATE", CONSOLE_DEVICE);
 	*nr = vtstat.v_active;
-	snprintf(filename, sizeof(filename), "%s%d", TTY_DEVICE_BASE, *nr);
-	*owner = stat(filename, &fstat) == 0 ? fstat.st_uid : (uid_t)-1;
 }
 
 CLEANUP int vt_lock_switch(int set) {
