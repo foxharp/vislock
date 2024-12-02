@@ -134,7 +134,7 @@ CLEANUP int vt_release(vt_t *vt, int nr) {
 	if (vt->nr > 0) {
 		while ((ret = ioctl(fd, VT_DISALLOCATE, vt->nr)) == -1 && errno == EINTR);
 		if (ret == -1) {
-			error(0, errno, "%s: VT_DISALLOCATE", CONSOLE_DEVICE);
+			// error(0, errno, "%s: VT_DISALLOCATE", CONSOLE_DEVICE);
 			return -1;
 		}
 		vt->nr = -1;

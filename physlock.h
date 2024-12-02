@@ -49,6 +49,8 @@ int authenticate(userinfo_t*);
 
 /* options.c */
 
+#define NUSERS 10
+
 typedef struct options_s {
 	int detach;
 	int disable_sysrq;
@@ -57,10 +59,10 @@ typedef struct options_s {
 	int batterycap;
 	int timeofday;
 	int commands;
-	int rootunlock;
 	const char *prompt;
 	const char *fontfile;
-	const char *username;
+	int nusers;
+	const char *usernames[NUSERS];
 } options_t;
 
 extern const options_t *options;

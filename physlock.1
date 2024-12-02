@@ -26,14 +26,9 @@ day, and battery capacity), it will also respond to SIGUSR1 by refreshing
 its screen, which is useful after the system resumes from suspend.  (The
 screen will update within 30 seconds, even without SIGUSR1.)
 .P
-physlock will accept the password of the user which owns the VT at
-which physlock was invoked.  If no user is logged in on that VT, the
-root password will be required.  WARNING:  This means that if physlock
-is invoked independently of a login session, perhaps based on timeout,
-or by a special key, and there is no password for root, then you may
-be locked out of the machine.  Having a root password available is
-recommended when using physlock.  Using the -u USER option will force
-which password can unlock the machine.
+physlock will accept the password of any of the users listed on the command
+line.  This can include 'root', if desired, or any other user who might
+need access to the machine.
 .SH OPTIONS
 .TP
 .B \-b
@@ -63,7 +58,7 @@ Only lock console switching and exit.
 .TP
 .B \-L
 Only enable (unlock) console switching and exit. This is useful when a prior
-instance of physlock has crashed and leaved the console switching mechanism
+instance of physlock has crashed and left the console switching mechanism
 locked.
 .TP
 .B \-m
@@ -74,10 +69,6 @@ Display
 .I MSG
 when physlock starts.
 .TP
-.B \-r
-Causes physlock to ask for the root password, rather than that of
-the logged-in user, every fourth attempt. 
-.TP
 .B \-s
 Disable SysRq mechanism while physlock is running.
 .TP
@@ -85,7 +76,8 @@ Disable SysRq mechanism while physlock is running.
 Display date and time.
 .TP
 .BI "\-u " USER
-Unlock when USER's password is given (or root's, if -r is used as well).
+Unlock when USER's password is given.  If given multiple times, 
+any of the respective passwords will cause an unlock.
 .TP
 .B \-v
 Print version information to standard output and exit.

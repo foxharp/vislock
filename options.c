@@ -28,7 +28,7 @@ static options_t _options;
 const options_t *options = (const options_t*) &_options;
 
 void print_usage() {
-	printf("usage: physlock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
+	fprintf(stderr, "usage: physlock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
 }
 
 void print_version() {
@@ -46,7 +46,7 @@ void parse_options(int argc, char **argv) {
 	_options.lock_switch = -1;
 	_options.mute_kernel_messages = 0;
 
-	while ((opt = getopt(argc, argv, "bcdf:hLlmp:rstu:v")) != -1) {
+	while ((opt = getopt(argc, argv, "bcdf:hLlmp:stu:v")) != -1) {
 		switch (opt) {
 			case '?':
 				print_usage();
@@ -78,9 +78,6 @@ void parse_options(int argc, char **argv) {
 			case 'p':
 				_options.prompt = optarg;
 				break;
-			case 'r':
-				_options.rootunlock = 1;
-				break;
 			case 's':
 				_options.disable_sysrq = 1;
 				break;
@@ -88,7 +85,13 @@ void parse_options(int argc, char **argv) {
 				_options.timeofday = 1;
 				break;
 			case 'u':
-				_options.username = optarg;
+				if (_options.nusers < NUSERS) {
+					_options.usernames[_options.nusers++] = optarg;
+				} else {
+				fprintf(stderr,
+					"Too many users, max %d\n", NUSERS);
+				exit(1);
+				}
 				break;
 			case 'v':
 				print_version();

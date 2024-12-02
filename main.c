@@ -40,7 +40,7 @@ static int oldsysrq;
 static int oldprintk;
 static pid_t chpid;
 static int locked;
-static userinfo_t root, user;
+static userinfo_t users[NUSERS];
 
 struct pam_response *reply;
 
@@ -61,18 +61,13 @@ static struct pam_conv conv = {
 };
 
 static void get_pam(userinfo_t *uinfo) {
+
+	/* pam would tell us this much later, let's catch it early */
+	if (!getpwnam(uinfo->name))
+		error(EXIT_FAILURE, 0, "No such user '%s'", uinfo->name);
+
 	if (pam_start("physlock", uinfo->name, &conv, &uinfo->pamh) != PAM_SUCCESS)
-		error(EXIT_FAILURE, 0, "No pam for user %s", uinfo->name);
-}
-
-void get_user_by_id(userinfo_t *uinfo, uid_t uid) {
-	struct passwd *pw;
-
-	while (errno = 0, (pw = getpwuid(uid)) == NULL && errno == EINTR);
-	if (pw == NULL)
-		error(EXIT_FAILURE, 0, "No password file entry for uid %u found", uid);
-
-	get_user_by_name(uinfo, pw->pw_name);
+		error(EXIT_FAILURE, 0, "pam_start failure");
 }
 
 void get_user_by_name(userinfo_t *uinfo, const char *name) {
@@ -89,8 +84,9 @@ void cleanup() {
 	if (options->detach && chpid > 0)
 		/* No cleanup in parent after successful fork */
 		return;
-	free_user(&user);
-	free_user(&root);
+	int i;
+	for (i = 0; i < options->nusers; i++)
+	    free_user(&users[i]);
 	close(0);
 	close(1);
 	close(2);
@@ -186,6 +182,41 @@ void get_password(char *prompt, char *buffer, size_t size)
 		printf("\n");
 }
 
+int
+do_pam_auth(userinfo_t *u, char *pass) {
+
+	reply = (struct pam_response *) malloc(sizeof(struct pam_response));
+	reply[0].resp = estrdup(pass);
+	reply[0].resp_retcode = 0;
+
+	u->pam_status = pam_authenticate(u->pamh, 0);
+	switch (u->pam_status) {
+	case PAM_SUCCESS:
+		pam_setcred(u->pamh, PAM_REFRESH_CRED);
+		return 0;
+
+	case PAM_AUTH_ERR:
+		return -1;
+
+	case PAM_MAXTRIES:
+		return -2;
+
+	case PAM_ABORT:
+	case PAM_CRED_INSUFFICIENT:
+	case PAM_AUTHINFO_UNAVAIL:
+	case PAM_USER_UNKNOWN:
+		fprintf(vt.ios, "\n%s\n", pam_strerror(u->pamh, u->pam_status));
+		return EXIT_FAILURE;
+
+	default:
+		/* intermittent error?
+		 * see https://github.com/xyb3rt/physlock/commit/15744f5a2bf05178c1eafc7c4f8a46ffabb29184
+		 * and https://github.com/xyb3rt/physlock/issues/68
+		 */
+		sleep(5);
+		return -3;
+	}
+}
 
 char *
 timestring()
@@ -232,6 +263,7 @@ void set_font()
 #define CLEARLINE "\x1b[2K"
 #define CLEARSCREEN "\x1b[2J"
 #define CHOOSELINE "\x1b[14H"
+#define FIRSTLINE "\x1b[1H"
 #define HIDECURSOR "\x1b[?25l"
 #define RED "\x1b[31m"
 #define NORMAL "\x1b[39m"
@@ -239,8 +271,7 @@ void set_font()
 int main(int argc, char **argv) {
 	int tries = 0;
 	uid_t owner;
-	userinfo_t *u = &user;
-	int user_is_root;
+	int i;
 
 	char *passbuff;
 
@@ -248,7 +279,10 @@ int main(int argc, char **argv) {
 	vt.ios = NULL;
 
 	error_init(2);
+
 	parse_options(argc, argv);
+	if (options->nusers == 0)
+		error(EXIT_FAILURE, 0, "No users specified");
 
 	if (geteuid() != 0)
 		error(EXIT_FAILURE, 0, "Must be root!");
@@ -270,16 +304,8 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	if (options->username) {
-		get_user_by_name(&user, options->username);
-	} else if (get_user_logind(&user, oldvt) == -1 &&
-			get_user_utmp(&user, oldvt) == -1) {
-		get_user_by_id(&user, owner);
-	}
-
-	get_user_by_id(&root, 0);
-
-	user_is_root = (strcmp(user.name, root.name) == 0);
+	for (i = 0; i < options->nusers; i++)
+		get_user_by_name(&users[i], options->usernames[i]);
 
 	atexit(cleanup);
 
@@ -331,15 +357,10 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
-		u = &user;
-		if (options->rootunlock && (tries % 4) == 3)
-		    	u = &root;
-
-		reply = (struct pam_response *)malloc(sizeof(struct pam_response));
-		passbuff = malloc(PASSBUFLEN);
 
 		if (options->timeofday) {
-			fprintf(vt.ios, CHOOSELINE CLEARLINE "%s\n", timestring());
+			fprintf(vt.ios, CHOOSELINE CLEARLINE "%s\n",
+				timestring());
 		}
 
 		if (options->batterycap) {
@@ -355,21 +376,21 @@ int main(int argc, char **argv) {
 		}
 
 		fprintf(vt.ios, CLEARLINE);
-		if (tries) {
-			int i;
-			for (i = 0; i < tries; i++) fprintf(vt.ios, ":-( ");
-		}
+		if (tries > 10) tries = 1;
+		for (i = 0; i < tries; i++) fprintf(vt.ios, ":-( ");
+
 		// Build the "prompt" line
 		fprintf(vt.ios, "\n" CLEARLINE);
 		if (options->commands)
 			fprintf(vt.ios, "\"reboot\", \"shutdown\", or ");
-		if (user_is_root || u == &root)
-			fprintf(vt.ios, "%s ", root.name);
 		fprintf(vt.ios, "password: ");
 		fflush(vt.ios);
 
-		if (!avail_c(30))  // SIGUSR1 will cause a screen refresh
+		// SIGUSR1, or a timeout, will cause a screen refresh
+		if (!avail_c(30))
 			continue;
+
+		passbuff = malloc(PASSBUFLEN);
 
 		get_password("", passbuff, PASSBUFLEN);
 
@@ -386,29 +407,22 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		reply[0].resp = passbuff;
-		reply[0].resp_retcode = 0;
-
-		u->pam_status = pam_authenticate(u->pamh, 0);
-		switch (u->pam_status) {
-		case PAM_SUCCESS:
-			pam_setcred(u->pamh, PAM_REFRESH_CRED);
-			locked = 0;
-			break;
-		case PAM_AUTH_ERR:
-		case PAM_MAXTRIES:
-			if (++tries > 12) tries = 1;
-			break;
-		case PAM_ABORT:
-		case PAM_CRED_INSUFFICIENT:
-		case PAM_USER_UNKNOWN:
-			fprintf(vt.ios, "%s\n", pam_strerror(u->pamh, u->pam_status));
-			return EXIT_FAILURE;
-		default:
-			/* intermittent error? */
-			sleep(5);
-			break;
+		for (i = 0; i < options->nusers; i++) {
+			if (do_pam_auth(&users[i], passbuff) == 0) {
+				locked = 0;
+				break;
+			}
 		}
+
+		/* scrub our copy of the password.  pam scrubbed theirs */
+		explicit_bzero(passbuff, sizeof(passbuff));
+		free(passbuff);
+
+		if (locked == 0)
+			break;
+
+		tries++;
+
 	}
 
 	return 0;
