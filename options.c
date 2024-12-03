@@ -37,9 +37,9 @@ void print_usage() {
   -c        allow shutdown/reboot commands on lock screen\n\
   -f FONT   specify file containing lock screen font\n\
   -u USER   add USER's password to unlock list (can be repeated)\n\
-  -d        detach process, useful when suspending immediately\n\
-  -l        lock console switching and exit\n\
-  -L        unlock console switching and exit (useful after crash)\n\
+  -d        fork and detach process, useful when suspending immediately\n\
+  -l        disable console switching and exit\n\
+  -L        enable console switching and exit (useful after crash)\n\
   -m        mute kernel messages while running\n\
   -s        disable sysrq while running\n\
   -v        version\n\
