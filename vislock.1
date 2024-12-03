@@ -1,4 +1,4 @@
-.TH PHYSLOCK 1 vislock\-VERSION
+.TH VISLOCK 1 vislock\-VERSION
 .SH NAME
 vislock \- lock all consoles / virtual terminals
 .SH SYNOPSIS
@@ -9,35 +9,35 @@ vislock \- lock all consoles / virtual terminals
 .RB [ \-p
 .IR MSG ]
 .SH DESCRIPTION
-vislock is a fork of the physlock screen locker, renamed to avoid
-confusion with the original, and with the distribution packages named
-"physlock".
+vislock is a Linux screen locker which will lock all local virtual
+console and X11 screens while active.  vislock detects the set of
+local users who should be able to unlock the screen; that list can be
+augmented from the command line.  There are options for displaying
+those user names, the time, and the remaining battery capacity, on the
+lock screen, as well as the ability to perform shutdown and reboot
+operations directly, without unlocking.  The behaviour of vislock is
+completely controlled via command-line arguments:  it does not use a
+configuration file or environment variables. 
 .P
-physlock is an alternative to vlock, it is equivalent to `vlock \-an'. It is
-written because vlock blocks some linux kernel mechanisms like hibernate and
-suspend and can therefore only be used with some limitations.
+vislock can be configured (at compile time) to use either logind or
+the utmp file to identify locally logged-in users, and will accept any
+of their passwords to unlock the computer.  That list can be augmented
+on the command line (with -u), allowing the locker to be invoked even
+when there is no local user.
 .P
-vislock adds some features to physlock, mostly driven by personal whim.
+Since vislock can display dynamic values on the lock screen (e.g.,
+time of day, and battery capacity), it will also respond to SIGUSR1 by
+refreshing its screen, which is useful after the system resumes from
+suspend.  (The screen will update every 30 seconds, regardless.)
 .P
-The behaviour of vislock is completely controlled via command-line arguments,
-it does not rely on environment variables.
-vislock uses the utmp file to identify the owner of the current session (i.e.
-active tty) and prompts for their password to unlock the computer.
-.P
-Since vislock can display dynamic values on the lock screen (i.e. time of
-day, and battery capacity), it will also respond to SIGUSR1 by refreshing
-its screen, which is useful after the system resumes from suspend.  (The
-screen will update within 30 seconds, even without SIGUSR1.)
-.P
-vislock will accept the password for any of the local users whose
-names are obtained from logind (or utmp), as well as for users listed
-on the command line with -u options.
-
+vislock is an extension of the physlock screen locker, renamed to avoid
+confusion with the original project, and with its distribution packages.
+physlock itself was written as an alternative to vlock.
 .SH OPTIONS
 .TP
 .B \-b
-Show battery capacity on lockscreen.  Currently hardcoded to use
-the value of /sys/class/power_supply/BAT0/capacity.
+Display battery capacity on lockscreen.  Currently configured to use
+the value found in /sys/class/power_supply/BAT0/capacity.
 .TP
 .B \-c
 Allow "shutdown" and "reboot" commands (literally), in addition to
@@ -83,8 +83,10 @@ Disable SysRq mechanism while vislock is running.
 Display date and time on the lockscreen.
 .TP
 .BI "\-u " USER
-Unlock when USER's password is given.  If given multiple times, 
-any of the respective user passwords will cause an unlock.
+Allow USER to unlock the screen.  If
+.B -u
+is given multiple times, 
+any of the respective passwords will cause an unlock.
 .TP
 .B \-v
 Print version information to standard output and exit.
@@ -95,6 +97,7 @@ Paul Fox (foxharp on github) add support for battery capacity display,
 shutdown/reboot commands and more.  (2024)
 .SH HOMEPAGE
 .TP
-http://github.com/muennich/vislock
+http://github.com/foxharp/vislock
 .SH SEE ALSO
 .BR vlock (1)
+.BR physlock (1)
