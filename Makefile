@@ -6,11 +6,12 @@ VPATH = $(srcdir)
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/share/man
 
-# enable user detection using libsystemd or libelogind
+# enable user detection using libsystemd or libelogind.  if
+# neither is enabled, the utmp file will be consulted.
 HAVE_SYSTEMD = 1
 HAVE_ELOGIND = 0
 
-cflags = -Wall -pedantic $(CFLAGS)
+cflags = -Wall -Wno-format -pedantic $(CFLAGS)
 cppflags = -I. $(CPPFLAGS) \
   -DHAVE_SYSTEMD=$(HAVE_SYSTEMD) -DHAVE_ELOGIND=$(HAVE_ELOGIND)
 
