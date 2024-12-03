@@ -24,7 +24,7 @@ esac
 
 	if [ -x $myvislock -a -u $myvislock ]
 	then
-	    $myvislock -dbct -u pgf -u jdh \
+	    $myvislock -dbct \
 		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 	else
 	    printf -v positioncursor "\e[14H"
