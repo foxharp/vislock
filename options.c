@@ -28,7 +28,22 @@ static options_t _options;
 const options_t *options = (const options_t*) &_options;
 
 void print_usage() {
-	fprintf(stderr, "usage: vislock [-bcdhLlmrstv] [-u USER ] [-f FONTFILE ] [-p MSG]\n");
+	fprintf(stderr, 
+"usage: vislock [options]\n\
+  -p MSG    display MSG at top of lock screen\n\
+  -t        display time-of-day on lock screen\n\
+  -b        display battery level on lock screen\n\
+  -c        allow shutdown/reboot commands on lock screen\n\
+  -f FONT   specify file containing lock screen font\n\
+  -u USER   add USER's password to unlock list (can be repeated)\n\
+  -d        detach process, useful when suspending immediately\n\
+  -l        lock console switching and exit\n\
+  -L        unlock console switching and exit (useful after crash)\n\
+  -m        mute kernel messages while running\n\
+  -s        disable sysrq while running\n\
+  -v        version\n\
+  -h        help\n\
+");
 }
 
 void print_version() {
