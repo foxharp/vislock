@@ -33,6 +33,7 @@ void print_usage() {
   -p MSG    display MSG at top of lock screen\n\
   -t        display time-of-day on lock screen\n\
   -b        display battery level on lock screen\n\
+  -n        display names of unlocking users on lock screen\n\
   -c        allow shutdown/reboot commands on lock screen\n\
   -f FONT   specify file containing lock screen font\n\
   -u USER   add USER's password to unlock list (can be repeated)\n\
@@ -61,7 +62,7 @@ void parse_options(int argc, char **argv) {
 	_options.lock_switch = -1;
 	_options.mute_kernel_messages = 0;
 
-	while ((opt = getopt(argc, argv, "bcdf:hLlmp:stu:v")) != -1) {
+	while ((opt = getopt(argc, argv, "bcdf:hLlmnp:stu:v")) != -1) {
 		switch (opt) {
 			case '?':
 				print_usage();
@@ -89,6 +90,9 @@ void parse_options(int argc, char **argv) {
 				break;
 			case 'm':
 				_options.mute_kernel_messages = 1;
+				break;
+			case 'n':
+				_options.names = 1;
 				break;
 			case 'p':
 				_options.prompt = optarg;

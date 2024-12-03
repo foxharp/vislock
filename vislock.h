@@ -55,6 +55,7 @@ typedef struct options_s {
 	int mute_kernel_messages;
 	int batterycap;
 	int timeofday;
+	int names;
 	int commands;
 	const char *prompt;
 	const char *fontfile;

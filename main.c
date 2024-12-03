@@ -407,6 +407,13 @@ int main(int argc, char **argv) {
 				red, capacity, normal);
 		}
 
+		if (options->names) {
+			fprintf(vt.ios, CLEARLINE);
+			for (i = 0; i < nusers; i++)
+				fprintf(vt.ios, "%s ", usernames[i]);
+			fprintf(vt.ios, "\n");
+		}
+
 		fprintf(vt.ios, CLEARLINE);
 		if (tries > 10) tries = 1;
 		for (i = 0; i < tries; i++) fprintf(vt.ios, ":-( ");
