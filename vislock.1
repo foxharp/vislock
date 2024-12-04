@@ -37,7 +37,8 @@ physlock itself was written as an alternative to vlock.
 .TP
 .B \-b
 Display battery capacity on lockscreen.  Currently configured to use
-the value found in /sys/class/power_supply/BAT0/capacity.
+the value found in /sys/class/power_supply/BAT0/capacity.  Option will
+be ignored (with a warning) if this path is inaccessible.
 .TP
 .B \-c
 Allow "shutdown" and "reboot" commands (literally), in addition to

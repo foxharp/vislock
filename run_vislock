@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 case $1 in
--r)
+-r|--refresh)
 	# cause a screen refresh.  useful after a suspend/resume
 	killall -USR1 vislock
 	exit
@@ -24,7 +25,8 @@ esac
 
 	if [ -x $myvislock -a -u $myvislock ]
 	then
-	    $myvislock -dbct \
+	    test -e /sys/class/power_supply/BAT0/capacity && bopt="-b"
+	    $myvislock -dmct $bopt \
 		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 	else
 	    printf -v positioncursor "\e[14H"

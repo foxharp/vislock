@@ -11,7 +11,7 @@ MANPREFIX = $(PREFIX)/share/man
 HAVE_SYSTEMD = 1
 HAVE_ELOGIND = 0
 
-cflags = -Wall -Wno-format -pedantic $(CFLAGS)
+cflags = -Wall -Wno-format -pedantic $(CFLAGS) -g
 cppflags = -I. $(CPPFLAGS) \
   -DHAVE_SYSTEMD=$(HAVE_SYSTEMD) -DHAVE_ELOGIND=$(HAVE_ELOGIND)
 
