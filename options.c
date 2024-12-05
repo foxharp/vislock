@@ -35,6 +35,7 @@ void print_usage() {
   -b        display battery level on lock screen\n\
   -n        display names of unlocking users on lock screen\n\
   -c        allow shutdown/reboot commands on lock screen\n\
+  -o MIN    turn the lock screen off after MIN minutes\n\
   -f FONT   specify file containing lock screen font\n\
   -u USER   add USER's password to unlock list (can be repeated)\n\
   -d        fork and detach process, useful when suspending immediately\n\
@@ -52,7 +53,8 @@ void print_version() {
 }
 
 void parse_options(int argc, char **argv) {
-	int opt;
+	int opt, n;
+	char *endp;
 	
 	progname = strrchr(argv[0], '/');
 	progname = progname != NULL ? progname + 1 : argv[0];
@@ -62,7 +64,7 @@ void parse_options(int argc, char **argv) {
 	_options.lock_switch = -1;
 	_options.mute_kernel_messages = 0;
 
-	while ((opt = getopt(argc, argv, "bcdf:hLlmnp:stu:v")) != -1) {
+	while ((opt = getopt(argc, argv, "bcdf:hLlmno:p:stu:v")) != -1) {
 		switch (opt) {
 			case '?':
 				print_usage();
@@ -93,6 +95,14 @@ void parse_options(int argc, char **argv) {
 				break;
 			case 'n':
 				_options.names = 1;
+				break;
+			case 'o':
+				n = strtol(optarg, &endp, 10);
+				if (*endp != '\0') {
+				    error(EXIT_FAILURE, 0,
+					"bad or missing argument for -o\n");
+				}
+				_options.screenoff = n;
 				break;
 			case 'p':
 				_options.prompt = optarg;

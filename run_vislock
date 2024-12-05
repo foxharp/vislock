@@ -1,5 +1,6 @@
 #!/bin/bash
 
+timeout=2    # minutes
 
 case $1 in
 -r|--refresh)
@@ -26,7 +27,7 @@ esac
 	if [ -x $myvislock -a -u $myvislock ]
 	then
 	    test -e /sys/class/power_supply/BAT0/capacity && bopt="-b"
-	    $myvislock -dmct $bopt \
+	    $myvislock -dmct -o $timeout $bopt \
 		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 	else
 	    printf -v positioncursor "\e[14H"

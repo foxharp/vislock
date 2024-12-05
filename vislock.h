@@ -57,6 +57,7 @@ typedef struct options_s {
 	int timeofday;
 	int names;
 	int commands;
+	int screenoff;
 	const char *prompt;
 	const char *fontfile;
 } options_t;

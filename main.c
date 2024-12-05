@@ -31,6 +31,8 @@
 #include <pwd.h>
 #include <signal.h>
 #include <security/pam_misc.h>
+#include <linux/tiocl.h>
+#include <sys/ioctl.h>
 
 #define PASSBUFLEN 30
 #define NUSERS 10
@@ -282,9 +284,10 @@ void set_font()
 	}
 }
 
-#define CLEARLINE "\x1b[2K"
 #define CLEARSCREEN "\x1b[2J"
-#define CHOOSELINE "\x1b[%dH"      // parameter is line no.
+#define CLEARLINE "\x1b[2K"
+#define CHOOSELINE "\x1b[%dH"	    // parameter is line no.
+#define BLANKAFTER "\x1b[9;%d]"	    // parameter in minutes
 #define RED "\x1b[31m"
 #define NORMAL "\x1b[39m"
 
@@ -385,6 +388,10 @@ int main(int argc, char **argv) {
 	dup2(vt.fd, 2);
 
 	fprintf(vt.ios, CLEARSCREEN);
+
+	// a blank interval of 0 (the default) disables blanking
+	fprintf(vt.ios, BLANKAFTER, options->screenoff);
+
 	if (options->prompt != NULL && options->prompt[0] != '\0') {
 		fprintf(vt.ios, "%s\n\n", options->prompt);
 	}
@@ -393,6 +400,10 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
+		/* unblank screen.  this is how setterm --blank=poke works */
+		char ioctlarg = TIOCL_UNBLANKSCREEN;
+		(void)ioctl(vt.fd, TIOCLINUX, &ioctlarg);
+
 		fprintf(vt.ios, CHOOSELINE, 14);  // line 14.
 
 		if (options->timeofday) {
