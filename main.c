@@ -284,9 +284,7 @@ void set_font()
 
 #define CLEARLINE "\x1b[2K"
 #define CLEARSCREEN "\x1b[2J"
-#define CHOOSELINE "\x1b[14H"
-#define FIRSTLINE "\x1b[1H"
-#define HIDECURSOR "\x1b[?25l"
+#define CHOOSELINE "\x1b[%dH"      // parameter is line no.
 #define RED "\x1b[31m"
 #define NORMAL "\x1b[39m"
 
@@ -395,10 +393,10 @@ int main(int argc, char **argv) {
 
 
 	while (locked) {
-		fprintf(vt.ios, CHOOSELINE);
+		fprintf(vt.ios, CHOOSELINE, 14);  // line 14.
 
 		if (options->timeofday) {
-			fprintf(vt.ios, CHOOSELINE CLEARLINE "%s\n",
+			fprintf(vt.ios, CLEARLINE "%s\n",
 				timestring());
 		}
 
