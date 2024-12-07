@@ -9,30 +9,45 @@ vislock \- lock all consoles / virtual terminals
 .RB [ \-p
 .IR MSG ]
 .SH DESCRIPTION
-vislock is a Linux screen locker which will lock all local virtual
-console and X11 screens while active.  vislock detects the set of
+.hw vis-lock
+.B vislock
+is a Linux screen locker which will lock all local virtual
+console and X11 screens while active.
+.B vislock
+detects the set of
 local users who should be able to unlock the screen; that list can be
 augmented from the command line.  There are options for displaying
 those user names, the time, and the remaining battery capacity, on the
 lock screen, as well as the ability to perform shutdown and reboot
-operations directly, without unlocking.  The behaviour of vislock is
+operations directly, without unlocking.  The behaviour of
+.B vislock
+is
 completely controlled via command-line arguments:  it does not use a
-configuration file or environment variables. 
+configuration file or environment variables.
 .P
-vislock can be configured (at compile time) to use either logind or
+.B vislock
+can be configured (at compile time) to use either logind or
 the utmp file to identify locally logged-in users, and will accept any
 of their passwords to unlock the computer.  That list can be augmented
 on the command line (with -u), allowing the locker to be invoked even
 when there is no local user.
 .P
-Since vislock can display dynamic values on the lock screen (e.g.,
+Since
+.B vislock
+can display dynamic values on the lock screen (e.g.,
 time of day, and battery capacity), it will also respond to SIGUSR1 by
 refreshing its screen, which is useful after the system resumes from
 suspend.  (The screen will update every 30 seconds, regardless.)
 .P
-vislock is an extension of the physlock screen locker, renamed to avoid
+.B
+vislock
+is an extension of the
+.B physlock
+screen locker, renamed to avoid
 confusion with the original project, and with its distribution packages.
-physlock itself was written as an alternative to vlock.
+.B physlock
+itself was written as an alternative to 
+.BR vlock .
 .SH OPTIONS
 .TP
 .B \-b
@@ -45,14 +60,16 @@ Allow "shutdown" and "reboot" commands (literally), in addition to
 the user password.  No authentication is performed.
 .TP
 .B \-d
-Fork and detach vislock before prompting for authentication. The parent
+Fork and detach
+.B vislock
+before prompting for authentication. The parent
 process returns right after everything is set up, so this option is useful for
 use in suspend/hibernate scripts.
 .TP
 .BI "\-f " FONTFILE
-Set the console font using 
+Set the console font using
 .IR FONTFILE .
-.B FONTFILE
+.I FONTFILE
 must be a full pathname, and will be loaded by /usr/bin/setfont.
 .TP
 .B \-h
@@ -63,11 +80,14 @@ Only lock console switching and exit.
 .TP
 .B \-L
 Only enable (unlock) console switching and exit. This is useful when a prior
-instance of vislock has crashed and left the console switching mechanism
+instance of
+.B vislock
+has crashed and left the console switching mechanism
 locked.
 .TP
 .B \-m
-Mute kernel messages on console while vislock is running.
+Mute kernel messages on console while
+.B vislock is running.
 .TP
 .B \-n
 Display the names of users who can unlock on the lockscreen.
@@ -79,27 +99,36 @@ which suppresses blanking.
 .BI "\-p " MSG
 Display
 .I MSG
-when vislock starts.
+when
+.B vislock
+starts.
 .TP
 .B \-s
-Disable SysRq mechanism while vislock is running.
+Disable SysRq mechanism while
+.B vislock
+is running.
 .TP
 .B \-t
 Display date and time on the lockscreen.
 .TP
 .BI "\-u " USER
-Allow USER to unlock the screen.  If
+Allow 
+.I USER
+to unlock the screen.  If
 .B -u
-is given multiple times, 
+is given multiple times,
 any of the respective passwords will cause an unlock.
 .TP
 .B \-v
 Print version information to standard output and exit.
 .SH AUTHORS
-.TP
-Bert Muennich <ber.t at gmx.com> wrote physlock.
-Paul Fox (foxharp on github) add support for battery capacity display,
-shutdown/reboot commands and more.  (2024)
+Bert Muennich <ber.t at gmx.com> wrote
+.BR physlock .
+.P
+Paul Fox (foxharp on github) added support for battery capacity display,
+shutdown/reboot commands, and more, and changed the project name to
+.BR vislock .
+(2024)
 .SH HOMEPAGE
 .TP
 http://github.com/foxharp/vislock
