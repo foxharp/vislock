@@ -1,5 +1,6 @@
 vislock will lock physical access to a linux computer by disabling
-all of its virtual terminals.
+all of its virtual terminals.  (vislock is a direct extension of
+the now-archived physlock project.)
 
 vislock allows any active user of the local machine, as well as
 others mentioned on the command line (e.g., root) to unlock the
@@ -12,7 +13,7 @@ mechanism to use is determined at compile time (see the Makefile).
     users (if compiled with either `HAVE_SYSTEMD=1` or
     `HAVE_ELOGIND=1`).
 
-- Searching the utmp file for entries whose `ut_line` field 
+- Searching the utmp file for entries whose `ut_line` field
     represents a VC (ttyN).
 
 Without options, the lock screen consists of just a simple "password:"
@@ -40,7 +41,7 @@ the executable will be `/usr/local/bin/vislock`.  Modify this using:
 
 vislock will be installed as setuid-to-root.
 
-All build-time specific settings are in the file `config.def.h`. 
+All build-time specific settings are in the file `config.def.h`.
 Check and change them as needed.
 
 You also have to make sure that vislock works with your PAM
@@ -63,6 +64,7 @@ Display options:
   -n        display names of unlocking users on lock screen
   -c        allow shutdown/reboot commands on lock screen
   -f FONT   specify file containing lock screen font (full path)
+  -o MINUTES set a screen-blanking timeout
   -m        mute kernel messages while running
 
 Configuration:
@@ -78,4 +80,29 @@ Misc:
   -v        version
   -h        help
 
+
+History
+-------
+I've always been frustrated both by the a) complexity, and b) lack of
+flexibility of modern screen lockers and power managers.  I've
+implemented my own primitive variants over the years, with varying
+levels of success.  Mainly they've barely done what I needed, and
+little more.  When I found physlock, it fit my needs perfectly...
+almost.  So I've added the things that I've wanted, fixed the bugs
+I've caused, and maybe one or two others (not clear on those ;-), and
+it "Works for Me", as they say.
+
+I invoke vislock from a script in /etc/acpi (for lid closures), and
+from a small inactivity-detecting daemon I wrote a while ago.  Other
+use cases are completely untested, but I haven't really changed any of
+the physlock underpinnings, so it's probably as fine as it ever was.
+
+Bear in mind that physlock itself has a long history, and an issues
+page to back it up.  Many or most of the open issues on the physlock
+project may well apply to vislock as well.  Unless they affect me
+personally, I probably won't spend a lot of time on them, but I'm
+happy to consider patches.
+
+A simple wrapper script, "run_vislock", is included in the sources.  I
+find it helps to keep my preferred invocation options in one place.
 
