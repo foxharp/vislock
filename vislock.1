@@ -3,26 +3,30 @@
 vislock \- lock all consoles / virtual terminals
 .SH SYNOPSIS
 .B vislock
-.RB [ \-dhLlmsv ]
+.RB [ \-bcdhLlmnstv ]
 .RB [ \-f
 .IR FONTFILE ]
+.RB [ \-o
+.IR MINUTES ]
 .RB [ \-p
 .IR MSG ]
+.RB [ \-u
+.IR USER ]
 .SH DESCRIPTION
 .hw vis-lock
 .B vislock
 is a Linux screen locker which will lock all local virtual
 console and X11 screens while active.
 .B vislock
-detects the set of
-local users who should be able to unlock the screen; that list can be
-augmented from the command line.  There are options for displaying
-those user names, the time, and the remaining battery capacity, on the
-lock screen, as well as the ability to perform shutdown and reboot
-operations directly, without unlocking.  The behaviour of
+detects the set of local users who should be able to unlock the
+screen; that list can be augmented from the command line.  The lock
+screen can display those user names, the time, and/or the remaining
+battery capacity, all depending on options.
 .B vislock
-is
-completely controlled via command-line arguments:  it does not use a
+can also allow shutdown and reboot operations directly, without unlocking.
+The behaviour of
+.B vislock
+is completely controlled via command-line arguments:  it does not use a
 configuration file or environment variables.
 .P
 .B vislock
@@ -34,67 +38,32 @@ when there is no local user.
 .P
 Since
 .B vislock
-can display dynamic values on the lock screen (e.g.,
-time of day, and battery capacity), it will also respond to SIGUSR1 by
-refreshing its screen, which is useful after the system resumes from
-suspend.  (The screen will update every 30 seconds, regardless.)
+can display dynamic values on the lock screen (e.g., time of day, and
+battery capacity), it will also respond to SIGUSR1 by refreshing its
+screen, which is useful after the system resumes from suspend.  (The
+screen will update every 30 seconds, regardless.)
+.P
+Obviously,
+.B vislock
+must interact with PAM.  If the PAM configuration for "unknown" services
+(in /etc/pam.d/other) is overly restrictive, you may need to provide a
+.BR vislock -specific
+configuration in /etc/pam.d/vislock.  A sample file (vislock.pam) is
+provided with the sources.
 .P
 .B
 vislock
 is an extension of the
 .B physlock
-screen locker, renamed to avoid
-confusion with the original project, and with its distribution packages.
+screen locker, and is mostly backward compatible.  It was renamed to avoid
+confusion with the original project, and with its distribution packages.  The
+name was mainly chosen because it rhymes with the original.
 .B physlock
 itself was written as an alternative to 
 .BR vlock .
 .SH OPTIONS
-.TP
-.B \-b
-Display battery capacity on lockscreen.  Currently configured to use
-the value found in /sys/class/power_supply/BAT0/capacity.  Option will
-be ignored (with a warning) if this path is inaccessible.
-.TP
-.B \-c
-Allow "shutdown" and "reboot" commands (literally), in addition to
-the user password.  No authentication is performed.
-.TP
-.B \-d
-Fork and detach
-.B vislock
-before prompting for authentication. The parent
-process returns right after everything is set up, so this option is useful for
-use in suspend/hibernate scripts.
-.TP
-.BI "\-f " FONTFILE
-Set the console font using
-.IR FONTFILE .
-.I FONTFILE
-must be a full pathname, and will be loaded by /usr/bin/setfont.
-.TP
-.B \-h
-Print brief usage information to standard output and exit.
-.TP
-.B \-l
-Only lock console switching and exit.
-.TP
-.B \-L
-Only enable (unlock) console switching and exit. This is useful when a prior
-instance of
-.B vislock
-has crashed and left the console switching mechanism
-locked.
-.TP
-.B \-m
-Mute kernel messages on console while
-.B vislock is running.
-.TP
-.B \-n
-Display the names of users who can unlock on the lockscreen.
-.TP
-.BI "\-o " MINUTES
-Set the lock screen "off" timeout (i.e. going blank).  Default is 0,
-which suppresses blanking.
+
+.SS Options that affect appearance of the lock screen:
 .TP
 .BI "\-p " MSG
 Display
@@ -102,25 +71,94 @@ Display
 when
 .B vislock
 starts.
-.TP
-.B \-s
-Disable SysRq mechanism while
-.B vislock
-is running.
+
 .TP
 .B \-t
 Display date and time on the lockscreen.
+
+.TP
+.B \-b
+Display battery capacity on lockscreen.  Currently configured to use
+the value found in /sys/class/power_supply/BAT0/capacity.  Option will
+be ignored (with a warning) if this path is inaccessible.
+
+.TP
+.B \-n
+Display the names of users who can unlock on the lockscreen.
+
+.TP
+.B \-c
+Allow "shutdown" and "reboot" commands (literally), in addition to
+the user password.  No authentication is performed.
+
+.TP
+.BI "\-f " FONTFILE
+Set the console font using
+.IR FONTFILE .
+.I FONTFILE
+must be a full pathname, and will be loaded by /usr/bin/setfont.
+
+.TP
+.BI "\-o " MINUTES
+Set the lock screen "off" timeout (i.e. going blank).  Default is 0,
+which suppresses blanking.
+
+.TP
+.B \-m
+Mute kernel messages on console while
+.B vislock is running.
+
+.SS Configuration options:
+
 .TP
 .BI "\-u " USER
 Allow 
 .I USER
 to unlock the screen.  If
 .B -u
-is given multiple times,
-any of the respective passwords will cause an unlock.
+is given multiple times, any of the respective passwords will cause an
+unlock.  For backward compatibility with
+.BR physlock,
+add "-u root".
+
+.TP
+.B \-s
+Disable SysRq mechanism while
+.B vislock
+is running.
+
+.TP
+.B \-d
+Fork and detach
+.B vislock
+before prompting for authentication. The parent
+process returns right after everything is set up, so this option is useful for
+use in suspend/hibernate scripts.
+
+.SS Debug and troubleshooting:
+
+.TP
+.B \-l
+Lock (disable) console switching, and exit.
+
+.TP
+.B \-L
+Enable (unlock) console switching, and exit.  This is useful for
+unlocking the screen via an ssh session, perhaps needed as a result
+of a prior
+.B vislock
+crash, bug, or misconfiguration.  (The old
+.B vislock
+process will likely need to be killed, in addition.)
+
+.SS Informational:
 .TP
 .B \-v
 Print version information to standard output and exit.
+.TP
+.B \-h
+Print brief usage information to standard output and exit.
+
 .SH AUTHORS
 Bert Muennich <ber.t at gmx.com> wrote
 .BR physlock .
@@ -131,7 +169,7 @@ shutdown/reboot commands, and more, and changed the project name to
 (2024)
 .SH HOMEPAGE
 .TP
-http://github.com/foxharp/vislock
+https://github.com/foxharp/vislock
 .SH SEE ALSO
 .BR vlock (1)
 .BR physlock (1)
