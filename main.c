@@ -229,7 +229,7 @@ do_pam_auth(userinfo_t *u, char *pass) {
 	case PAM_CRED_INSUFFICIENT:
 	case PAM_AUTHINFO_UNAVAIL:
 	case PAM_USER_UNKNOWN:
-		fprintf(vt.ios, "\n%s\n", pam_strerror(u->pamh, u->pam_status));
+		printf("\n%s\n", pam_strerror(u->pamh, u->pam_status));
 		return EXIT_FAILURE;
 
 	default:
@@ -298,7 +298,6 @@ int main(int argc, char **argv) {
 	char *passbuff;
 
 	oldvt = oldsysrq = oldprintk = vt.nr = vt.fd = -1;
-	vt.ios = NULL;
 
 	error_init(2);
 
@@ -387,13 +386,13 @@ int main(int argc, char **argv) {
 	dup2(vt.fd, 1);
 	dup2(vt.fd, 2);
 
-	fprintf(vt.ios, CLEARSCREEN);
+	printf(CLEARSCREEN);
 
 	// a blank interval of 0 (the default) disables blanking
-	fprintf(vt.ios, BLANKAFTER, options->screenoff);
+	printf(BLANKAFTER, options->screenoff);
 
 	if (options->prompt != NULL && options->prompt[0] != '\0') {
-		fprintf(vt.ios, "%s\n\n", options->prompt);
+		printf("%s\n\n", options->prompt);
 	}
 
 	locked = 1;
@@ -404,13 +403,15 @@ int main(int argc, char **argv) {
 		char ioctlarg = TIOCL_UNBLANKSCREEN;
 		(void)ioctl(vt.fd, TIOCLINUX, &ioctlarg);
 
-		fprintf(vt.ios, CHOOSELINE, 14);  // line 14.
+		printf(CHOOSELINE, 14);  // line 14.
 
+		/* line 1:  time of day */
 		if (options->timeofday) {
-			fprintf(vt.ios, CLEARLINE "%s\n",
-				timestring());
+			printf(CLEARLINE);
+			printf("%s\n", timestring());
 		}
 
+		/* line 2:  battery capacity */
 		if (options->batterycap && have_battery) {
 			int capacity = read_int_from_file(BATTERY_PATH, '\n');
 			char *red, *normal;
@@ -419,27 +420,30 @@ int main(int argc, char **argv) {
 			} else {
 				red = ""; normal = "";
 			}
-			fprintf(vt.ios, CLEARLINE "Battery: %s%d%%%s\n",
-				red, capacity, normal);
+			printf(CLEARLINE);
+			printf("Battery: %s%d%%%s\n", red, capacity, normal);
 		}
 
+		/* line 3:  user names */
 		if (options->names) {
-			fprintf(vt.ios, CLEARLINE);
+			printf(CLEARLINE);
 			for (i = 0; i < nusers; i++)
-				fprintf(vt.ios, "%s ", usernames[i]);
-			fprintf(vt.ios, "\n");
+				printf("%s ", usernames[i]);
+			printf("\n");
 		}
 
-		fprintf(vt.ios, CLEARLINE);
+		/* line 3:  failure indicators */
+		printf(CLEARLINE);
 		if (tries > 10) tries = 1;
-		for (i = 0; i < tries; i++) fprintf(vt.ios, ":-( ");
+		for (i = 0; i < tries; i++) printf(":-( ");
+		printf("\n");
 
-		// Build the "prompt" line
-		fprintf(vt.ios, "\n" CLEARLINE);
+		/* line 4: the prompt */
+		printf(CLEARLINE);
 		if (options->commands)
-			fprintf(vt.ios, "\"reboot\", \"shutdown\", or a ");
-		fprintf(vt.ios, "password: ");
-		fflush(vt.ios);
+			printf("\"reboot\", \"shutdown\", or a ");
+		printf("password: ");
+		fflush(stdout);
 
 		// SIGUSR1, or a timeout, will cause a screen refresh
 		if (!avail_c(30))
@@ -451,13 +455,13 @@ int main(int argc, char **argv) {
 
 		if (options->commands) {
 			if (strcmp(passbuff, "reboot") == 0) {
-				fprintf(vt.ios, "\nRebooting...\n");
+				printf("\nRebooting...\n");
 				system(REBOOT_CMD);
 				sleep(10);
 				continue;
 			}
 			if (strcmp(passbuff, "shutdown") == 0) {
-				fprintf(vt.ios, "\nShutting down...\n");
+				printf("\nShutting down...\n");
 				system(SHUTDOWN_CMD);
 				sleep(10);
 				continue;
