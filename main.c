@@ -209,6 +209,16 @@ void get_password(char *prompt, char *buffer, size_t size)
 int
 do_pam_auth(userinfo_t *u, char *pass) {
 
+	/* Set PAM_TTY for PAM modules that might want it, e.g.
+	 * pam_securetty.so.  From xxc3nsoredxx on github, for
+	 * physlock issue #110.
+	 */
+	u->pam_status = pam_set_item(u->pamh, PAM_TTY, vt.vt_name);
+	if (u->pam_status != PAM_SUCCESS) {
+		error(EXIT_FAILURE, 0, "Unable to set PAM_TTY: %s",
+				pam_strerror(u->pamh, u->pam_status));
+	}
+
 	reply = (struct pam_response *) malloc(sizeof(struct pam_response));
 	reply[0].resp = estrdup(pass);
 	reply[0].resp_retcode = 0;
