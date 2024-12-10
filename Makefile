@@ -61,7 +61,8 @@ install: all
 	install -D -m 4755 -o root -g root vislock $(DESTDIR)$(PREFIX)/bin/vislock
 	@echo "INSTALL vislock.1"
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	sed "s/VERSION/$(version)/g" vislock.1 > $(DESTDIR)$(MANPREFIX)/man1/vislock.1
+	v="$$(sed -n -e 's/.*VERSION "\(.*\)"/\1/p' version.h)"; \
+	sed "s/VERSION/$${v}/g" vislock.1 > $(DESTDIR)$(MANPREFIX)/man1/vislock.1
 	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/vislock.1
 
 uninstall:
