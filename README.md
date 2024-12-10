@@ -1,6 +1,8 @@
 vislock will lock physical access to a linux computer by disabling
 all of its virtual terminals.  (vislock is a direct extension of
-the now-archived physlock project.)
+the now-archived [physlock] project.)
+
+[physlock]: https://github.com/xyb3rt/physlock
 
 vislock allows any active user of the local machine, as well as
 others mentioned on the command line (e.g., root) to unlock the
@@ -91,7 +93,7 @@ I've always been frustrated both by the a) complexity, and b) lack of
 flexibility of modern screen lockers and power managers.  I've
 implemented my own primitive variants over the years, with varying
 levels of success.  Mainly they've barely done what I needed, and
-little more.  When I found physlock, it fit my needs perfectly...
+little more.  When I found [physlock], it fit my needs perfectly...
 almost.  So I've added the things that I've wanted, fixed the bugs
 I've caused, and maybe one or two others (not clear on those ;-), and
 it "Works for Me", as they say.
@@ -101,7 +103,7 @@ from a small inactivity-detecting daemon I wrote a while ago.  Other
 use cases are completely untested, but I haven't really changed any of
 the physlock underpinnings, so it's probably as fine as it ever was.
 
-Bear in mind that physlock itself has a long history, and an issues
+Bear in mind that [physlock] itself has a long history, and an issues
 page to back it up.  Many or most of the open issues on the physlock
 project may well apply to vislock as well.  Unless they affect me
 personally, I probably won't spend a lot of time on them, but I'm
