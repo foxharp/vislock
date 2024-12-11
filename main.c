@@ -169,11 +169,9 @@ int avail_c(int secs)
 	return (result > 0 && FD_ISSET(fd, &readfds));
 }
 
-void get_password(char *prompt, char *buffer, size_t size)
+void get_password(char *buffer, size_t size)
 {
 	struct termios oldt, newt;
-	printf("%s", prompt);
-	fflush(stdout);
 
 	// Disable echo
 	tcgetattr(0, &oldt);
@@ -201,9 +199,6 @@ void get_password(char *prompt, char *buffer, size_t size)
 
 	// Re-enable echo
 	tcsetattr(0, TCSANOW, &oldt);
-
-	if (prompt[0])
-		printf("\n");
 }
 
 int
@@ -469,7 +464,7 @@ int main(int argc, char **argv) {
 
 		passbuff = malloc(PASSBUFLEN);
 
-		get_password("", passbuff, PASSBUFLEN);
+		get_password(passbuff, PASSBUFLEN);
 
 		if (options->commands) {
 			if (strcmp(passbuff, "reboot") == 0) {
