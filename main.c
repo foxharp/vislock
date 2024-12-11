@@ -301,6 +301,62 @@ void set_font()
 #define RED "\x1b[31m"
 #define NORMAL "\x1b[39m"
 
+void display_init(void) {
+	printf(CLEARSCREEN);
+
+	// a blank interval of 0 (the default) disables blanking
+	printf(BLANKAFTER, options->screenoff);
+
+	if (options->prompt != NULL && options->prompt[0] != '\0') {
+		printf("%s\n\n", options->prompt);
+	}
+}
+
+void display_refresh(int tries) {
+	int i;
+
+	printf(CHOOSELINE, 14);  // line 14.
+
+	/* line 1:  time of day */
+	if (options->timeofday) {
+		printf(CLEARLINE);
+		printf("%s\n", timestring());
+	}
+
+	/* line 2:  battery capacity */
+	if (options->batterycap) {
+		int capacity = read_int_from_file(BATTERY_PATH, '\n');
+		char *red, *normal;
+		if (capacity < 15) {
+			red = RED; normal = NORMAL;
+		} else {
+			red = ""; normal = "";
+		}
+		printf(CLEARLINE);
+		printf("Battery: %s%d%%%s\n", red, capacity, normal);
+	}
+
+	/* line 3:  user names */
+	if (options->names) {
+		printf(CLEARLINE);
+		for (i = 0; i < nusers; i++)
+			printf("%s ", usernames[i]);
+		printf("\n");
+	}
+
+	/* line 4:  failure indicators */
+	printf(CLEARLINE);
+	for (i = 0; i < tries; i++) printf(":-( ");
+	printf("\n");
+
+	/* line 5: the prompt */
+	printf(CLEARLINE);
+	if (options->commands)
+		printf("\"reboot\", \"shutdown\", or a ");
+	printf("password: ");
+	fflush(stdout);
+}
+
 int main(int argc, char **argv) {
 	int tries = 0;
 	int i;
@@ -395,14 +451,7 @@ int main(int argc, char **argv) {
 	dup2(vt.fd, 1);
 	dup2(vt.fd, 2);
 
-	printf(CLEARSCREEN);
-
-	// a blank interval of 0 (the default) disables blanking
-	printf(BLANKAFTER, options->screenoff);
-
-	if (options->prompt != NULL && options->prompt[0] != '\0') {
-		printf("%s\n\n", options->prompt);
-	}
+	display_init();
 
 	locked = 1;
 
@@ -412,47 +461,7 @@ int main(int argc, char **argv) {
 		char ioctlarg = TIOCL_UNBLANKSCREEN;
 		(void)ioctl(vt.fd, TIOCLINUX, &ioctlarg);
 
-		printf(CHOOSELINE, 14);  // line 14.
-
-		/* line 1:  time of day */
-		if (options->timeofday) {
-			printf(CLEARLINE);
-			printf("%s\n", timestring());
-		}
-
-		/* line 2:  battery capacity */
-		if (options->batterycap) {
-			int capacity = read_int_from_file(BATTERY_PATH, '\n');
-			char *red, *normal;
-			if (capacity < 15) {
-				red = RED; normal = NORMAL;
-			} else {
-				red = ""; normal = "";
-			}
-			printf(CLEARLINE);
-			printf("Battery: %s%d%%%s\n", red, capacity, normal);
-		}
-
-		/* line 3:  user names */
-		if (options->names) {
-			printf(CLEARLINE);
-			for (i = 0; i < nusers; i++)
-				printf("%s ", usernames[i]);
-			printf("\n");
-		}
-
-		/* line 3:  failure indicators */
-		printf(CLEARLINE);
-		if (tries > 10) tries = 1;
-		for (i = 0; i < tries; i++) printf(":-( ");
-		printf("\n");
-
-		/* line 4: the prompt */
-		printf(CLEARLINE);
-		if (options->commands)
-			printf("\"reboot\", \"shutdown\", or a ");
-		printf("password: ");
-		fflush(stdout);
+		display_refresh(tries % 10);
 
 		// SIGUSR1, or a timeout, will cause a screen refresh
 		if (!avail_c(30))
