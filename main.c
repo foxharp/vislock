@@ -257,7 +257,7 @@ timestring()
 
 	t = time(NULL);
 	tmp = localtime(&t);
-
+					// e.g., Wednesday Dec 11     9:22 am
 	(void)strftime(outstr, sizeof(outstr), "%A %b %-e    %l:%M %P", tmp);
 
 	return outstr;
@@ -373,7 +373,7 @@ int main(int argc, char **argv) {
 	/* Users from -u options are already in usernames[].  Now
 	 * add users from either logind or utmp.
 	 */
-	if (!get_users_logind())
+	if (!get_users_logind())    // only fails if unavailable
 		get_users_utmp();
 
 	/* this can occur if no one is logged in to the machine, in
@@ -449,7 +449,6 @@ int main(int argc, char **argv) {
 	display_init();
 
 	locked = 1;
-
 
 	while (locked) {
 		/* unblank screen.  this is how setterm --blank=poke works */
