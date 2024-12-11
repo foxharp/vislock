@@ -62,7 +62,7 @@ typedef struct options_s {
 	const char *fontfile;
 } options_t;
 
-extern const options_t *options;
+extern options_t *options;
 
 void parse_options(int, char**);
 

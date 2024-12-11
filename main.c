@@ -313,11 +313,10 @@ int main(int argc, char **argv) {
 
 	parse_options(argc, argv);
 
-	int have_battery = 1;
 	if (options->batterycap && access(BATTERY_PATH, R_OK) < 0) {
 		error(0, 0, "Warning: battery capacity inaccessible, "
 				"-b ignored\n");
-		have_battery = 0;
+		options->batterycap = 0;
 	}
 
 	/* Users from -u options are already in usernames[].  Now
@@ -422,7 +421,7 @@ int main(int argc, char **argv) {
 		}
 
 		/* line 2:  battery capacity */
-		if (options->batterycap && have_battery) {
+		if (options->batterycap) {
 			int capacity = read_int_from_file(BATTERY_PATH, '\n');
 			char *red, *normal;
 			if (capacity < 15) {

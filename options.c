@@ -25,7 +25,7 @@
 #include <unistd.h>
 
 static options_t _options;
-const options_t *options = (const options_t*) &_options;
+options_t *options = &_options;
 
 void print_usage() {
 	fprintf(stderr, 
