@@ -19,19 +19,22 @@ esac
 	# don't lock the machine if there are no users
 	test "$(users)" || exit 0
 
-	# prefer our modified vislock, but fall back to the system one
-	# if ours isn't installed correctly
-	myvislock=/usr/local/bin/vislock
-	sysvislock=/usr/bin/physlock
-
-	if [ -x $myvislock -a -u $myvislock ]
+	# if the system seems to have a battery, display its capacity
+	if [ -r /sys/class/power_supply/BAT0/capacity ]
 	then
-	    test -e /sys/class/power_supply/BAT0/capacity && bopt="-b"
-	    $myvislock -dmct -o $timeout $bopt \
-		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
-	else
-	    printf -v positioncursor "\e[14H"
-	    $sysvislock -d -p "$positioncursor"
+		bopt="-b"
 	fi
+
+	# maybe put /etc/issue at top of screen:
+	# printf -v msg "%s\n\n\n\n" "$(agetty --show-issue)"
+	# or a random fortune:
+	# printf -v msg "%s" "$(/usr/games/fortune literature)"
+
+	# or, simply space vislock down to near the middle of the screen
+	printf -v msg '\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+
+	vl=/usr/local/bin/vislock 
+	$vl -dmct -o $timeout $bopt -p "$msg" \
+		-f /usr/share/consolefonts/Lat15-TerminusBold32x16.psf.gz
 
 ) 9<$0

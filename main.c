@@ -289,28 +289,60 @@ void set_font()
 	}
 }
 
-#define CLEARSCREEN "\x1b[2J"
+#define CLEARSCREEN "\x1b[H\x1b[J"
 #define CLEARLINE "\x1b[2K"
 #define CHOOSELINE "\x1b[%dH"	    // parameter is line no.
 #define BLANKAFTER "\x1b[9;%d]"	    // parameter in minutes
 #define RED "\x1b[31m"
 #define NORMAL "\x1b[39m"
 
-void display_init(void) {
+/* returns no. of lines printed */
+int display_message(void) {
+
+	const char *msg = options->message;
+
 	printf(CLEARSCREEN);
 
-	// a blank interval of 0 (the default) disables blanking
-	printf(BLANKAFTER, options->screenoff);
+	if (msg[0]) {
+		int wasnl = 0;
 
-	if (options->prompt != NULL && options->prompt[0] != '\0') {
-		printf("%s\n\n", options->prompt);
+		/* figure out how long (in lines) the message is, so
+		 * we don't have to repaint it over and over again. 
+		 * it would probably work okay, but if it were a
+		 * really long message, it might cause screen flashing
+		 * on some displays?
+		 * also note whether string ended with a newline -- we
+		 * want to add one if not.
+		 */
+
+		printf("%s", msg);
+
+		int lines = 0;
+		const char *p;
+
+		for (p = msg; *p; p++) {
+			if (*p == '\n') {
+				wasnl = 1;
+				lines++;;
+			} else {
+				wasnl = 0;
+			}
+		}
+		if (!wasnl) {
+			putchar('\n');
+			lines++;
+		}
+
+		return lines;
 	}
+
+	return 0;
 }
 
-void display_refresh(int tries) {
+void display_refresh(int fails, int startline) {
 	int i;
 
-	printf(CHOOSELINE, 14);  // line 14.
+	printf(CHOOSELINE, startline); 
 
 	/* line 1:  time of day */
 	if (options->timeofday) {
@@ -341,8 +373,11 @@ void display_refresh(int tries) {
 
 	/* line 4:  failure indicators */
 	printf(CLEARLINE);
-	for (i = 0; i < tries; i++) printf(":-( ");
+	if (fails > 10) fails = 1;
+	for (i = 0; i < fails; i++) printf(":-( ");
 	printf("\n");
+	/* we're only called more than once if there was a password
+	 * mismatch.  so, get ready for the next call */
 
 	/* line 5: the prompt */
 	printf(CLEARLINE);
@@ -350,12 +385,12 @@ void display_refresh(int tries) {
 		printf("\"reboot\", \"shutdown\", or a ");
 	printf("password: ");
 	fflush(stdout);
+
 }
 
 int main(int argc, char **argv) {
-	int tries = 0;
 	int i;
-
+	int fails = 0;
 	char *passbuff;
 
 	oldvt = oldsysrq = oldprintk = vt.nr = vt.fd = -1;
@@ -446,7 +481,11 @@ int main(int argc, char **argv) {
 	dup2(vt.fd, 1);
 	dup2(vt.fd, 2);
 
-	display_init();
+	/* enable or disable display blanking:  an interval of 0 (the
+	 * default) disables */
+	printf(BLANKAFTER, options->screenoff);
+
+	int msglines = display_message();
 
 	locked = 1;
 
@@ -455,7 +494,7 @@ int main(int argc, char **argv) {
 		char ioctlarg = TIOCL_UNBLANKSCREEN;
 		(void)ioctl(vt.fd, TIOCLINUX, &ioctlarg);
 
-		display_refresh(tries % 10);
+		display_refresh(fails, msglines + 1);
 
 		// SIGUSR1, or a timeout, will cause a screen refresh
 		if (!avail_c(30))
@@ -493,9 +532,7 @@ int main(int argc, char **argv) {
 
 		if (locked == 0)
 			break;
-
-		tries++;
-
+		fails++;
 	}
 
 	return 0;

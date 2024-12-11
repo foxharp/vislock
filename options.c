@@ -63,6 +63,7 @@ void parse_options(int argc, char **argv) {
 	_options.disable_sysrq = 0;
 	_options.lock_switch = -1;
 	_options.mute_kernel_messages = 0;
+	_options.message = "";
 
 	while ((opt = getopt(argc, argv, "bcdf:hLlmno:p:stu:v")) != -1) {
 		switch (opt) {
@@ -105,7 +106,7 @@ void parse_options(int argc, char **argv) {
 				_options.screenoff = n;
 				break;
 			case 'p':
-				_options.prompt = optarg;
+				_options.message = optarg;
 				break;
 			case 's':
 				_options.disable_sysrq = 1;
