@@ -19,14 +19,14 @@ is a Linux screen locker which will lock all local virtual
 console and X11 screens while active.
 .B vislock
 detects the set of local users who should be able to unlock the
-screen; that list can be augmented from the command line.  The lock
-screen can display those user names, the time, and/or the remaining
-battery capacity, all depending on options.
+screen; that list can be augmented from the command line.  Depending
+on options, the screen can display those user names, the time, and the
+remaining battery capacity.
 .B vislock
 can also allow shutdown and reboot operations directly, without unlocking.
 The behaviour of
 .B vislock
-is completely controlled via command-line arguments:  it does not use a
+is completely controlled by command-line arguments:  it does not use a
 configuration file or environment variables.
 .P
 .B vislock
@@ -34,12 +34,14 @@ can be configured (at compile time) to use either logind or
 the utmp file to identify locally logged-in users, and will accept any
 of their passwords to unlock the computer.  That list can be augmented
 on the command line (with -u), allowing the locker to be invoked even
-when there is no local user.
+when there is no local user.  (The root user is not special in this
+regard.  root must be logged in, or mentioned on the command line, to
+be able to unlock the screen.)
 .P
 Since
 .B vislock
 can display dynamic values on the lock screen (e.g., time of day, and
-battery capacity), it will also respond to SIGUSR1 by refreshing its
+battery capacity), it will respond to SIGUSR1 by refreshing its
 screen, which is useful after the system resumes from suspend.  (The
 screen will update every 30 seconds, regardless.)
 .P
@@ -48,16 +50,15 @@ Obviously,
 must interact with PAM.  If the PAM configuration for "unknown" services
 (in /etc/pam.d/other) is overly restrictive, you may need to provide a
 .BR vislock -specific
-configuration in /etc/pam.d/vislock.  A sample file (vislock.pam) is
-provided with the sources.
+configuration in /etc/pam.d/vislock.  A sample file (vislock.pam) which
+may help is provided with the sources.
 .P
-.B
-vislock
+.B vislock
 is an extension of the
 .B physlock
 screen locker, and is mostly backward compatible.  It was renamed to avoid
 confusion with the original project, and with its distribution packages.  The
-name was mainly chosen because it rhymes with the original.
+name "vislock" was mainly chosen because it rhymes with the original.
 .B physlock
 itself was written as an alternative to 
 .BR vlock .
@@ -70,7 +71,8 @@ Display
 .I MSG
 when
 .B vislock
-starts.  A newline will be added if MSG doesn't end with one.
+starts.  MSG can be multiline, with embedded newlines.  A newline will
+be appended if MSG doesn't end with one.
 
 .TP
 .B \-t
@@ -78,9 +80,9 @@ Display date and time on the lockscreen.
 
 .TP
 .B \-b
-Display battery capacity on lockscreen.  Currently configured to use
-the value found in /sys/class/power_supply/BAT0/capacity.  Option will
-be ignored (with a warning) if this path is inaccessible.
+Display battery capacity on lockscreen, using
+the value found in /sys/class/power_supply/BAT0/capacity.  This option
+will be ignored (with a warning) if that path is inaccessible.
 
 .TP
 .B \-n
@@ -131,21 +133,20 @@ is running.
 .B \-d
 Fork and detach
 .B vislock
-before prompting for authentication. The parent
-process returns right after everything is set up, so this option is useful for
-use in suspend/hibernate scripts.
+into the background before asking for authentication.  This option
+is useful for use in suspend/hibernate scripts.
 
 .SS Debug and troubleshooting:
 
 .TP
 .B \-l
-Lock (disable) console switching, and exit.
+Lock (i.e., disable) console switching, and exit.
 
 .TP
 .B \-L
 Enable (unlock) console switching, and exit.  This is useful for
 unlocking the screen via an ssh session, perhaps needed as a result
-of a prior
+of a
 .B vislock
 crash, bug, or misconfiguration.  (The old
 .B vislock
@@ -157,7 +158,7 @@ process will likely need to be killed, in addition.)
 Print version information to standard output and exit.
 .TP
 .B \-h
-Print brief usage information to standard output and exit.
+Print brief usage information to standard error and exit.
 
 .SH VERSION
 This man page documents

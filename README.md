@@ -1,8 +1,10 @@
 vislock will lock physical access to a linux computer by disabling
 all of its virtual terminals.  (vislock is a direct extension of
-the now-archived [physlock] project.)
+the now-archived [physlock][] project.)
 
 [physlock]: https://github.com/xyb3rt/physlock
+
+
 
 vislock allows any active user of the local machine, as well as
 others mentioned on the command line (e.g., root) to unlock the
@@ -12,7 +14,7 @@ vislock uses two mechanisms to find the local active users.  Which
 mechanism to use is determined at compile time (see the Makefile).
 
 - Querying systemd-logind(1) or elogind(8) for non-remote, active,
-    users (if compiled with either `HAVE_SYSTEMD=1` or
+    users.  (Must be compiled with either `HAVE_SYSTEMD=1` or
     `HAVE_ELOGIND=1`).
 
 - Searching the utmp file for entries whose `ut_line` field
@@ -20,9 +22,9 @@ mechanism to use is determined at compile time (see the Makefile).
 
 Without options, the lock screen consists of just a simple "password:"
 prompt.  With options, it can also show the time, a laptop's battery
-level, and can even allow shutdown/reboot directly from the lock
-screen.  (I've always been frustrated by lock screens that don't have
-these basic features.)
+level, and can allow shutdown/reboot directly from the lock screen.
+(I've always been frustrated by lock screens that don't have these
+basic features.)
 
 Note that ssh, or other network access, is unaffected by vislock.
 
@@ -36,8 +38,8 @@ vislock is built and installed using:
     $ make
     # make install
 
-By default, vislock is installed to `/usr/local`, so the full path of
-the executable will be `/usr/local/bin/vislock`.  Modify this using:
+By default, vislock is installed to `/usr/local/bin/vislock`.  Change
+this using:
 
     # make PREFIX="/your/dir" install
 
@@ -47,8 +49,8 @@ All build-time specific settings are in the file `config.def.h`.
 Check and change them as needed.
 
 vislock needs to work with your PAM configuration.  If you have a
-restrictive PAM fallback config file `/etc/pam.d/other`, then you need
-to create a suitable PAM config file for vislock named
+restrictive PAM fallback config file in `/etc/pam.d/other`, then you
+need to create a suitable PAM config for vislock named,
 `/etc/pam.d/vislock`.  The sample `vislock.pam` may help.
 
 Usage
@@ -87,28 +89,28 @@ Misc:
     -h        help
 
 
+A simple wrapper script, `run_vislock`, is included with the sources.
+I find it helps to keep my preferred invocation options in one place.
+
+
 History
 -------
-I've always been frustrated both by the a) complexity, and b) lack of
+I've always been frustrated both by both the complexity and the lack of
 flexibility of modern screen lockers and power managers.  I've
 implemented my own primitive variants over the years, with varying
 levels of success.  Mainly they've barely done what I needed, and
-little more.  When I found [physlock], it fit my needs perfectly...
-almost.  So I've added the things that I've wanted, fixed the bugs
-I've caused, and maybe one or two others (not clear on those ;-), and
-it "Works for Me", as they say.
+little more.  When I found physlock, it fit my screen locking needs
+perfectly...  almost.  So I've added the things that I've wanted,
+fixed the bugs I've caused, and maybe one or two others (not clear on
+those ;-), and it "Works for Me", as they say.
 
 I invoke vislock from a script in `/etc/acpi` (for lid closures), and
 from a small inactivity-detecting daemon I wrote a while ago.  Other
 use cases are completely untested, but I haven't really changed any of
 the physlock underpinnings, so it's probably as fine as it ever was.
 
-Bear in mind that [physlock] itself has a long history, and an issues
-page to back it up.  Many or most of the open issues on the physlock
+Bear in mind that [physlock][] itself has a long history, and an
+issues page to back it up.  Many of the open issues on the physlock
 project may well apply to vislock as well.  Unless they affect me
 personally, I probably won't spend a lot of time on them, but I'm
 happy to consider patches.
-
-A simple wrapper script, `run_vislock`, is included with the sources. 
-I find it helps to keep my preferred invocation options in one place.
-
