@@ -162,12 +162,21 @@ int avail_c(int secs)
 
 	// Use select to check if data is available
 	int result = select(fd + 1, &readfds, NULL, NULL, &timeout);
+
+	// was it a signal?
 	if (result == -1 && errno == EINTR)
-		return 0;
+		return -1;
+
+	// a failure?
 	if (result < 0)
 		error(EXIT_FAILURE, errno, "select");
 
-	return (result > 0 && FD_ISSET(fd, &readfds));
+	// characters?
+	if (result > 0)
+		return 1;
+		
+	// result == 0, it's a timeout
+	return 0;
 }
 
 void get_password(char *buffer, size_t size)
@@ -491,15 +500,25 @@ int main(int argc, char **argv) {
 	locked = 1;
 
 	while (locked) {
-		/* unblank screen.  this is how setterm --blank=poke works */
+		display_refresh(fails, msglines + 1);
+
+		/* while waiting for a character, a timeout should
+		 * just refresh the screen (to keep the clock reasonably
+		 * up to date), but characters and signals should also
+		 * unblank it. */
+		int r = avail_c(30);
+
+		if (r == 0) // timeout
+			continue;
+
+		/* unblank.  this is how "setterm --blank=poke" does it */
 		char ioctlarg = TIOCL_UNBLANKSCREEN;
 		(void)ioctl(vt.fd, TIOCLINUX, &ioctlarg);
 
-		display_refresh(fails, msglines + 1);
-
-		// SIGUSR1, or a timeout, will cause a screen refresh
-		if (!avail_c(30))
+		if (r < 0) // signal
 			continue;
+
+		/* r > 0, characters are available */
 
 		passbuff = malloc(PASSBUFLEN);
 
