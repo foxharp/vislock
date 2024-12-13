@@ -58,7 +58,7 @@ void vt_get_current(int *nr) {
 
 CLEANUP int vt_lock_switch(int set) {
 	int ret;
-	
+
 	if (set) {
 		while ((ret = ioctl(fd, VT_LOCKSWITCH, 1)) == -1 && errno == EINTR);
 		if (ret == -1)

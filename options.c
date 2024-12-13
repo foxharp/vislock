@@ -29,7 +29,7 @@ static options_t _options;
 options_t *options = &_options;
 
 void print_usage() {
-	fprintf(stderr, 
+	fprintf(stderr,
 "usage: vislock [options]\n\
   -p MSG    display MSG at top of lock screen\n\
   -t        display time-of-day on lock screen\n\
@@ -56,7 +56,7 @@ void print_version() {
 void parse_options(int argc, char **argv) {
 	int opt, n;
 	char *endp;
-	
+
 	progname = strrchr(argv[0], '/');
 	progname = progname != NULL ? progname + 1 : argv[0];
 

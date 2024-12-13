@@ -142,7 +142,7 @@ void setup_signal(int signum, void (*handler)(int)) {
 	sigact.sa_flags = 0;
 	sigact.sa_handler = handler;
 	sigemptyset(&sigact.sa_mask);
-	
+
 	if (sigaction(signum, &sigact, NULL) < 0)
 		error(0, errno, "signal %d", signum);
 }
@@ -174,7 +174,7 @@ int avail_c(int secs)
 	// characters?
 	if (result > 0)
 		return 1;
-		
+
 	// result == 0, it's a timeout
 	return 0;
 }
@@ -290,7 +290,7 @@ void set_font()
 	} else {
 		char *args[] = {"/usr/bin/setfont",
 				(char *)options->fontfile, NULL};
-		char *envp[] = {NULL}; 
+		char *envp[] = {NULL};
 
 		if (execve("/usr/bin/setfont", args, envp) == -1) {
 			error(EXIT_FAILURE, errno, "execve");
@@ -317,7 +317,7 @@ int display_message(void) {
 		int wasnl = 0;
 
 		/* figure out how long (in lines) the message is, so
-		 * we don't have to repaint it over and over again. 
+		 * we don't have to repaint it over and over again.
 		 * it would probably work okay, but if it were a
 		 * really long message, it might cause screen flashing
 		 * on some displays?
@@ -352,7 +352,7 @@ int display_message(void) {
 void display_refresh(int fails, int startline) {
 	int i;
 
-	printf(CHOOSELINE, startline); 
+	printf(CHOOSELINE, startline);
 
 	/* line 1:  time of day */
 	if (options->timeofday) {
