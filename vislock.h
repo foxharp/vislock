@@ -1,4 +1,5 @@
 /* Copyright 2018 Bert Muennich
+ * Copyright 2024 Paul Fox
  *
  * This file is part of vislock.
  *
