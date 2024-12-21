@@ -303,8 +303,9 @@ void set_font()
 #define CLEARLINE "\x1b[2K"
 #define CHOOSELINE "\x1b[%dH"	    // parameter is line no.
 #define BLANKAFTER "\x1b[9;%d]"	    // parameter in minutes
-#define RED "\x1b[31m"
-#define NORMAL "\x1b[39m"
+#define REDFG "\x1b[31m"
+#define REDBG "\x1b[41m"
+#define NORMAL "\x1b[39m\x1b[49m"
 
 /* returns no. of lines printed */
 int display_message(void) {
@@ -364,8 +365,10 @@ void display_refresh(int fails, int startline) {
 	if (options->batterycap) {
 		int capacity = read_int_from_file(BATTERY_PATH, '\n');
 		char *red, *normal;
-		if (capacity < 15) {
-			red = RED; normal = NORMAL;
+		if (capacity <= 5) {
+			red = REDBG; normal = NORMAL;
+		} else if (capacity <= 20) {
+			red = REDFG; normal = NORMAL;
 		} else {
 			red = ""; normal = "";
 		}
