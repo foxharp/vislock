@@ -303,6 +303,7 @@ void set_font()
 #define CLEARLINE "\x1b[2K"
 #define CHOOSELINE "\x1b[%dH"	    // parameter is line no.
 #define BLANKAFTER "\x1b[9;%d]"	    // parameter in minutes
+#define CYANFG "\x1b[36m"
 #define REDFG "\x1b[31m"
 #define REDBG "\x1b[41m"
 #define NORMAL "\x1b[39m\x1b[49m"
@@ -363,17 +364,25 @@ void display_refresh(int fails, int startline) {
 
 	/* line 2:  battery capacity */
 	if (options->batterycap) {
-		int capacity = read_int_from_file(BATTERY_PATH, '\n');
-		char *red, *normal;
-		if (capacity <= 5) {
-			red = REDBG; normal = NORMAL;
+
+		char *color, *normal;
+
+		int capacity =
+		    read_int_from_file(BATTERY_PATH "/capacity", '\n');
+		char *status =
+		    read_string_from_file(BATTERY_PATH "/status", '\n');
+
+		if (strcmp(status, "Charging") == 0) {
+			color = CYANFG; normal = NORMAL;
+		} else if (capacity <= 5) {
+			color = REDBG; normal = NORMAL;
 		} else if (capacity <= 20) {
-			red = REDFG; normal = NORMAL;
+			color = REDFG; normal = NORMAL;
 		} else {
-			red = ""; normal = "";
+			color = ""; normal = "";
 		}
 		printf(CLEARLINE);
-		printf("Battery: %s%d%%%s\n", red, capacity, normal);
+		printf("Battery: %s%d%%%s\n", color, capacity, normal);
 	}
 
 	/* line 3:  user names */
@@ -412,8 +421,8 @@ int main(int argc, char **argv) {
 
 	parse_options(argc, argv);
 
-	if (options->batterycap && access(BATTERY_PATH, R_OK) < 0) {
-		error(0, 0, "Warning: battery capacity inaccessible, "
+	if (options->batterycap && access(BATTERY_PATH, R_OK|X_OK) < 0) {
+		error(0, 0, "Warning: battery information inaccessible, "
 				"-b ignored\n");
 		options->batterycap = 0;
 	}

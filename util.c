@@ -53,7 +53,7 @@ void error(int eval, int err, const char* fmt, ...)
 		exit(eval);
 }
 
-char* estrdup(const char *s) {
+char *estrdup(const char *s) {
 	char *d;
 	size_t n = strlen(s) + 1;
 
@@ -127,6 +127,23 @@ int read_int_from_file(const char *path, char ending_char) {
 		error(EXIT_FAILURE, 0, "%s: Invalid file content", path);
 
 	return value;
+}
+
+/*
+ * Read string from file, and ensure the last character is as expected.
+ * That character will be trimmed.
+ * The call always succeeds (it dies() on failure).
+ */
+char *read_string_from_file(const char *path, char ending_char) {
+	static char buf[64];
+
+	read_file(path, buf, sizeof(buf)-1);
+
+	if (buf[strlen(buf)-1] != ending_char)
+		error(EXIT_FAILURE, 0, "%s: Invalid file content", path);
+
+	buf[strlen(buf)-1] = '\0';
+	return buf;
 }
 
 /*
