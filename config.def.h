@@ -1,19 +1,19 @@
-/* pseudo device that points to foreground console:    */
-static const char * const CONSOLE_DEVICE  = "/dev/tty0";
+/* pseudo device that points to foreground console */
+#define CONSOLE_DEVICE  "/dev/tty0"
 
-/* common basename of all virtual console devices:     */
-static const char * const TTY_DEVICE_BASE = "/dev/tty";
+/* common basename of all virtual console devices */
+#define TTY_DEVICE_BASE "/dev/tty"
 
-/* full path to kernel sysrq control file:             */
-static const char * const SYSRQ_PATH = "/proc/sys/kernel/sysrq";
+/* full path to kernel sysrq control file */
+#define SYSRQ_PATH "/proc/sys/kernel/sysrq"
 
-/* full path to kernel printk file:			*/
-static const char * const PRINTK_PATH = "/proc/sys/kernel/printk";
+/* full path to kernel printk file */
+#define PRINTK_PATH "/proc/sys/kernel/printk"
 
-/* full path to battery capacity */
-#define BATTERY_PATH "/sys/class/power_supply/BAT0/" 
+/* partial path to battery information */
+#define BATTERY_PATH "/sys/class/power_supply/BAT0/"
 
 /* shutdown and reboot commands */
-static const char * const REBOOT_CMD = "/bin/systemctl reboot";
-static const char * const SHUTDOWN_CMD = "/bin/systemctl poweroff";
+#define REBOOT_CMD    "/bin/systemctl reboot"
+#define SHUTDOWN_CMD  "/bin/systemctl poweroff"
 
