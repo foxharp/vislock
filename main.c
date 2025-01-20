@@ -132,7 +132,9 @@ void sa_handler_exit(int signum) {
 	exit(0);
 }
 
+int refresh_requested;
 void sa_handler_refresh(int signum) {
+	refresh_requested = 3;
 	return;
 }
 
@@ -512,13 +514,25 @@ int main(int argc, char **argv) {
 	locked = 1;
 
 	while (locked) {
+		static int refresh_delay;
+
 		display_refresh(fails, msglines + 1);
+
+		/* if we got SIGUSR1, do a couple of extra refreshes.  it's
+		 * likely because battery status has changed, and that can
+		 * take a while to settle. */
+		if (refresh_requested) {
+			refresh_delay = 4 * refresh_requested;
+			refresh_requested--;
+		} else {
+			refresh_delay = 45;
+		}
 
 		/* while waiting for a character, a timeout should
 		 * just refresh the screen (to keep the clock reasonably
 		 * up to date), but characters and signals should also
 		 * unblank it. */
-		int r = avail_c(30);
+		int r = avail_c(refresh_delay);
 
 		if (r == 0) // timeout
 			continue;
