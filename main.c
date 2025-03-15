@@ -378,7 +378,7 @@ void display_refresh(int fails, int startline) {
 			color = CYANFG; normal = NORMAL;
 		} else if (capacity <= 5) {
 			color = REDBG; normal = NORMAL;
-		} else if (capacity <= 20) {
+		} else if (capacity <= 10) {
 			color = REDFG; normal = NORMAL;
 		} else {
 			color = ""; normal = "";
