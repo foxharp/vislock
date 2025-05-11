@@ -14,6 +14,6 @@
 #define BATTERY_PATH "/sys/class/power_supply/BAT0/"
 
 /* shutdown and reboot commands */
-#define REBOOT_CMD    "/bin/systemctl reboot"
-#define SHUTDOWN_CMD  "/bin/systemctl poweroff"
+#define REBOOT_CMD    "/usr/bin/sudo /sbin/reboot"
+#define SHUTDOWN_CMD  "/usr/bin/sudo /sbin/shutdown"
 

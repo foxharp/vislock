@@ -42,7 +42,7 @@ options.o: version.h
 	@echo "CC $@"
 	$(CC) $(cflags) $(cppflags) -c -o $@ $<
 
-config.h:
+config.h: config.def.h
 	@echo "GEN $@"
 	cp $(srcdir)/config.def.h $@
 
